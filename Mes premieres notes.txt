@@ -1,0 +1,3 @@
+PS C:\Users\570654\Downloads\Perso ENAF> git remote add origin https://github.com/KalilBalde/Mon-projet-perso-enaf.git
+PS C:\Users\570654\Downloads\Perso ENAF> git branch -M main
+PS C:\Users\570654\Downloads\Perso ENAF> git push -u origin main
