@@ -1,6 +1,6 @@
 /* ─── CONSTANTS ─── */
 
-export const LOGO_SRC = "/images/logo-enafim2.png";
+export const LOGO_SRC = "/images/logo_enafim.png";
 
 /* 4 images : rues residentielles, rangees de batiments, quartiers urbains */
 export const HERO_SLIDES = [

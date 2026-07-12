@@ -1,3 +1,4 @@
+"use client";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { LOGO_SRC } from "../../data/constants";
 
