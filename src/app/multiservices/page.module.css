@@ -1,0 +1,429 @@
+/* ============================================================
+   FICHIER : src/app/multiservices/page.module.css
+   ============================================================ */
+
+.page {
+  min-height: 100vh;
+  padding-top: 78px;
+  background: #f7f9fc;
+  color: #0a2e5c;
+  font-family: "DM Sans", sans-serif;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1120px;
+  height: 42px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #53657b;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #1a6dd4;
+}
+
+.pageLabel {
+  color: #8b9bb0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 248px;
+  overflow: hidden;
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.46);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 46, 92, 0.94),
+    rgba(10, 46, 92, 0.44)
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.heroKicker,
+.sectionKicker,
+.contactKicker {
+  color: #6eaff7;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.heroKicker {
+  color: #c3dcf8;
+}
+
+.heroContent h1 {
+  max-width: 480px;
+  margin: 8px 0 0;
+  color: #fff;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.06;
+}
+
+.heroContent p {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.heroLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 9px 13px;
+  border-radius: 8px;
+  background: #1a6dd4;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.servicesSection {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 42px 20px 48px;
+}
+
+.sectionIntro {
+  max-width: 520px;
+  margin-bottom: 20px;
+}
+
+.sectionIntro h2,
+.benefitsIntro h2 {
+  margin: 7px 0 0;
+  color: #0a2e5c;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(25px, 4vw, 38px);
+  line-height: 1.08;
+}
+
+.servicesList {
+  border-top: 1px solid #dfe7f0;
+}
+
+.serviceRow {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 150px 34px;
+  align-items: center;
+  gap: 18px;
+  min-height: 94px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dfe7f0;
+  text-decoration: none;
+}
+
+.serviceIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: #eaf3ff;
+  color: #1a6dd4;
+}
+
+.serviceCopy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.serviceCopy strong {
+  color: #0a2e5c;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.serviceCopy small {
+  max-width: 440px;
+  margin-top: 5px;
+  color: #718198;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.serviceImageWrapper {
+  display: block;
+  width: 150px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #dfe8f2;
+}
+
+.serviceImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.serviceArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d8e3ee;
+  border-radius: 50%;
+  color: #1a6dd4;
+}
+
+.serviceRow:hover .serviceArrow {
+  background: #1a6dd4;
+  color: #fff;
+}
+
+.benefitsSection {
+  padding: 36px 20px;
+  background: #fff;
+  border-top: 1px solid #e1e9f1;
+  border-bottom: 1px solid #e1e9f1;
+}
+
+.benefitsIntro,
+.benefitsGrid {
+  max-width: 1120px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.benefitsIntro {
+  margin-bottom: 22px;
+}
+
+.benefitsIntro h2 {
+  max-width: 430px;
+}
+
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.benefit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.benefitIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: #edf5ff;
+  color: #1a6dd4;
+}
+
+.benefit strong {
+  color: #0a2e5c;
+  font-size: 12px;
+}
+
+.benefit p {
+  margin: 3px 0 0;
+  color: #718198;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.contactSection {
+  width: 100%;
+  padding: 34px 20px 44px;
+  background: #f7f9fc;
+}
+
+.contactPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 22px 25px;
+  border-radius: 13px;
+  background: #0a2e5c;
+}
+
+.contactKicker {
+  color: #83bdff;
+}
+
+.contactPanel h2 {
+  margin: 6px 0 0;
+  color: #fff;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(23px, 4vw, 32px);
+  line-height: 1.05;
+}
+
+.contactPanel p {
+  margin: 5px 0 0;
+  color: rgba(255, 255, 255, 0.67);
+  font-size: 12px;
+}
+
+.contactButton {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: #0a2e5c;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-top: 78px;
+  }
+
+  .pageHeader {
+    height: 38px;
+    padding: 0 16px;
+  }
+
+  .hero {
+    min-height: 218px;
+  }
+
+  .heroContent {
+    padding: 26px 16px;
+  }
+
+  .heroContent h1 {
+    max-width: 340px;
+    font-size: clamp(27px, 8vw, 36px);
+  }
+
+  .heroContent p {
+    max-width: 310px;
+    font-size: 12px;
+  }
+
+  .servicesSection {
+    padding: 32px 16px 38px;
+  }
+
+  .sectionIntro {
+    margin-bottom: 16px;
+  }
+
+  .sectionIntro h2,
+  .benefitsIntro h2 {
+    font-size: 27px;
+  }
+
+  .serviceRow {
+    grid-template-columns: 40px minmax(0, 1fr) 30px;
+    gap: 10px;
+    min-height: 78px;
+    padding: 10px 0;
+  }
+
+  .serviceIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .serviceCopy strong {
+    font-size: 13px;
+  }
+
+  .serviceCopy small {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+
+  .serviceImageWrapper {
+    display: none;
+  }
+
+  .serviceArrow {
+    width: 28px;
+    height: 28px;
+  }
+
+  .benefitsSection {
+    padding: 30px 16px;
+  }
+
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .benefit {
+    padding: 8px 0;
+  }
+
+  .contactSection {
+    padding: 26px 16px 34px;
+  }
+
+  .contactPanel {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 17px;
+  }
+
+  .contactButton {
+    justify-content: center;
+  }
+}

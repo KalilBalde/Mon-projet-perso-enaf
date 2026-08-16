@@ -1,14 +1,32 @@
-"use client";
-
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
-/* ═══════════════════ BOUTON "VOIR TOUT" ═══════════════════ */
 
 export default function ViewAllButton() {
   return (
-    <button style={{ padding: "12px 24px", background: "transparent", border: "2px solid #0a2e5c", borderRadius: 12, fontSize: 14, fontWeight: 600, color: "#0a2e5c", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}
-      onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "#0a2e5c"; (e.target as HTMLElement).style.color = "#fff"; }}
-      onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; (e.target as HTMLElement).style.color = "#0a2e5c"; }}
-    >Voir tout <ArrowRight size={16} /></button>
+    <Link
+      href="/annonces"
+      aria-label="Voir toutes les annonces"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        gap: 6,
+        minHeight: 36,
+        padding: "8px 11px",
+        border: "1px solid #0a2e5c",
+        borderRadius: 8,
+        background: "#fff",
+        color: "#0a2e5c",
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: 11,
+        fontWeight: 700,
+        textDecoration: "none",
+        whiteSpace: "nowrap",
+      }}
+    >
+      Voir tout
+      <ArrowRight size={14} />
+    </Link>
   );
 }

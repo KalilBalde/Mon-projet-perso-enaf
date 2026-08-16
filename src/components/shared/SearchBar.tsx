@@ -1,67 +1,342 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MapPin, Home, ChevronDown, TrendingUp } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Home,
+  ChevronDown,
+  TrendingUp,
+} from "lucide-react";
 import type { SearchFilters } from "../../types";
 import { PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
 
-/* ═══════════════════ SEARCH BAR ═══════════════════ */
+interface SearchBarProps {
+  onSearch: (filters: SearchFilters) => void;
+}
 
-export default function SearchBar() {
-  const [filters, setFilters] = useState<SearchFilters>({ type: "Tous types", quartier: "Tous les quartiers", budgetMax: "" });
-  const [activeDD, setActiveDD] = useState<string | null>(null);
+const INITIAL_FILTERS: SearchFilters = {
+  type: "Tous types",
+  quartier: "Tous les quartiers",
+  budgetMax: "",
+};
 
-  const selBtn: React.CSSProperties = { width: "100%", padding: "14px 16px", background: "#fff", border: "2px solid #e4eaf0", borderRadius: 12, fontSize: 15, color: "#0a2e5c", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", fontFamily: "'DM Sans', sans-serif", fontWeight: 500 };
-  const ddBox: React.CSSProperties = { position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 12, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 100, border: "1px solid #e4eaf0", maxHeight: 240, overflowY: "auto" };
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [filters, setFilters] = useState<SearchFilters>(INITIAL_FILTERS);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  const updateFilter = (key: keyof SearchFilters, value: string) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [key]: value,
+    }));
+  };
+
+  const handleSearch = () => {
+    onSearch(filters);
+
+    window.setTimeout(() => {
+      document.getElementById("listings")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  };
+
+  const fieldStyle: React.CSSProperties = {
+    position: "relative",
+    minWidth: 0,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    marginBottom: 4,
+    color: "#7d8da3",
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: "1px",
+    textTransform: "uppercase",
+  };
+
+  const controlStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    minHeight: 42,
+    padding: "9px 10px",
+    border: "1px solid #dce5ef",
+    borderRadius: 9,
+    background: "#fff",
+    color: "#0a2e5c",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    textAlign: "left",
+  };
+
+  const dropdownStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "calc(100% + 5px)",
+    right: 0,
+    left: 0,
+    zIndex: 100,
+    maxHeight: 210,
+    overflowY: "auto",
+    border: "1px solid #dce5ef",
+    borderRadius: 9,
+    background: "#fff",
+    boxShadow: "0 12px 30px rgba(10,46,92,0.16)",
+  };
 
   return (
-    <div style={{ maxWidth: 800, margin: "-44px auto 0", padding: "0 24px", position: "relative", zIndex: 10 }}>
-      <div style={{ background: "#fff", borderRadius: 20, padding: 20, boxShadow: "0 12px 48px rgba(10,46,92,0.12)", border: "1px solid #edf1f7" }}>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }} className="search-bar-inner">
-          {/* Type */}
-          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8a9bb5", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", textAlign: "left" }}>Type de bien</label>
-            <button style={selBtn} onClick={() => setActiveDD(activeDD === "type" ? null : "type")}>
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}><Home size={16} color="#1a6dd4" />{filters.type}</span>
-              <ChevronDown size={16} color="#999" />
+    <div
+      style={{
+        position: "relative",
+        zIndex: 10,
+        maxWidth: 760,
+        margin: "-42px auto 0",
+        padding: "0 14px",
+      }}
+    >
+      <div
+        style={{
+          padding: 11,
+          border: "1px solid #e6edf5",
+          borderRadius: 14,
+          background: "#fff",
+          boxShadow: "0 8px 24px rgba(10,46,92,0.12)",
+        }}
+      >
+        <div
+          className="search-bar-inner"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 7,
+          }}
+        >
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Type de bien</label>
+
+            <button
+              type="button"
+              style={controlStyle}
+              onClick={() =>
+                setActiveDropdown(
+                  activeDropdown === "type" ? null : "type",
+                )
+              }
+            >
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: 0,
+                  gap: 5,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Home size={14} color="#1a6dd4" />
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {filters.type}
+                </span>
+              </span>
+
+              <ChevronDown size={14} color="#8998aa" />
             </button>
-            {activeDD === "type" && <div style={ddBox}>{PROPERTY_TYPES.map((t) => (
-              <div key={t} style={{ padding: "12px 16px", fontSize: 14, color: filters.type === t ? "#1a6dd4" : "#333", cursor: "pointer", background: filters.type === t ? "#f0f6ff" : "transparent", fontWeight: filters.type === t ? 600 : 400, fontFamily: "'DM Sans', sans-serif" }}
-                onClick={() => { setFilters({ ...filters, type: t }); setActiveDD(null); }}
-                onMouseEnter={(e) => ((e.target as HTMLElement).style.background = filters.type === t ? "#f0f6ff" : "#f9f9f9")}
-                onMouseLeave={(e) => ((e.target as HTMLElement).style.background = filters.type === t ? "#f0f6ff" : "transparent")}
-              >{t}</div>
-            ))}</div>}
+
+            {activeDropdown === "type" && (
+              <div style={dropdownStyle}>
+                {PROPERTY_TYPES.map((propertyType) => (
+                  <button
+                    type="button"
+                    key={propertyType}
+                    onClick={() => {
+                      updateFilter("type", propertyType);
+                      setActiveDropdown(null);
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "10px 12px",
+                      border: "none",
+                      background:
+                        filters.type === propertyType
+                          ? "#f0f6ff"
+                          : "#fff",
+                      color:
+                        filters.type === propertyType
+                          ? "#1a6dd4"
+                          : "#33445a",
+                      cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 12,
+                      fontWeight:
+                        filters.type === propertyType ? 700 : 500,
+                      textAlign: "left",
+                    }}
+                  >
+                    {propertyType}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {/* Quartier */}
-          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8a9bb5", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", textAlign: "left" }}>Quartier</label>
-            <button style={selBtn} onClick={() => setActiveDD(activeDD === "q" ? null : "q")}>
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}><MapPin size={16} color="#1a6dd4" />{filters.quartier}</span>
-              <ChevronDown size={16} color="#999" />
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Quartier</label>
+
+            <button
+              type="button"
+              style={controlStyle}
+              onClick={() =>
+                setActiveDropdown(
+                  activeDropdown === "quartier"
+                    ? null
+                    : "quartier",
+                )
+              }
+            >
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: 0,
+                  gap: 5,
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <MapPin size={14} color="#1a6dd4" />
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {filters.quartier}
+                </span>
+              </span>
+
+              <ChevronDown size={14} color="#8998aa" />
             </button>
-            {activeDD === "q" && <div style={ddBox}>{QUARTIERS.map((q) => (
-              <div key={q} style={{ padding: "12px 16px", fontSize: 14, color: filters.quartier === q ? "#1a6dd4" : "#333", cursor: "pointer", background: filters.quartier === q ? "#f0f6ff" : "transparent", fontWeight: filters.quartier === q ? 600 : 400, fontFamily: "'DM Sans', sans-serif" }}
-                onClick={() => { setFilters({ ...filters, quartier: q }); setActiveDD(null); }}
-                onMouseEnter={(e) => ((e.target as HTMLElement).style.background = filters.quartier === q ? "#f0f6ff" : "#f9f9f9")}
-                onMouseLeave={(e) => ((e.target as HTMLElement).style.background = filters.quartier === q ? "#f0f6ff" : "transparent")}
-              >{q}</div>
-            ))}</div>}
+
+            {activeDropdown === "quartier" && (
+              <div style={dropdownStyle}>
+                {QUARTIERS.map((neighborhood) => (
+                  <button
+                    type="button"
+                    key={neighborhood}
+                    onClick={() => {
+                      updateFilter("quartier", neighborhood);
+                      setActiveDropdown(null);
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "10px 12px",
+                      border: "none",
+                      background:
+                        filters.quartier === neighborhood
+                          ? "#f0f6ff"
+                          : "#fff",
+                      color:
+                        filters.quartier === neighborhood
+                          ? "#1a6dd4"
+                          : "#33445a",
+                      cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 12,
+                      fontWeight:
+                        filters.quartier === neighborhood
+                          ? 700
+                          : 500,
+                      textAlign: "left",
+                    }}
+                  >
+                    {neighborhood}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {/* Budget */}
-          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8a9bb5", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", textAlign: "left" }}>Budget max (GNF)</label>
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Budget maximum</label>
+
             <div style={{ position: "relative" }}>
-              <input type="text" placeholder="Ex : 5 000 000" value={filters.budgetMax} onChange={(e) => setFilters({ ...filters, budgetMax: e.target.value })}
-                style={{ width: "100%", padding: "14px 16px 14px 40px", background: "#fff", border: "2px solid #e4eaf0", borderRadius: 12, fontSize: 15, color: "#0a2e5c", outline: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, boxSizing: "border-box" }} />
-              <TrendingUp size={16} color="#1a6dd4" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+              <TrendingUp
+                size={14}
+                color="#1a6dd4"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 10,
+                  transform: "translateY(-50%)",
+                }}
+              />
+
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Ex : 5 000 000"
+                value={filters.budgetMax}
+                onChange={(event) =>
+                  updateFilter("budgetMax", event.target.value)
+                }
+                style={{
+                  width: "100%",
+                  minHeight: 42,
+                  padding: "9px 8px 9px 30px",
+                  border: "1px solid #dce5ef",
+                  borderRadius: 9,
+                  outline: "none",
+                  background: "#fff",
+                  color: "#0a2e5c",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 16, padding: "16px 32px", background: "linear-gradient(135deg, #1a6dd4 0%, #2b82f0 100%)", color: "#fff", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontFamily: "'DM Sans', sans-serif", boxShadow: "0 8px 32px rgba(26,109,212,0.35)", letterSpacing: "0.3px", transition: "all 0.3s" }}
-          onMouseEnter={(e) => { (e.target as HTMLElement).style.transform = "translateY(-2px)"; (e.target as HTMLElement).style.boxShadow = "0 14px 44px rgba(26,109,212,0.45)"; }}
-          onMouseLeave={(e) => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 8px 32px rgba(26,109,212,0.35)"; }}
-        ><Search size={18} /> Rechercher un bien</button>
+
+        <button
+          type="button"
+          onClick={handleSearch}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            minHeight: 42,
+            gap: 7,
+            marginTop: 8,
+            padding: "10px 14px",
+            border: "none",
+            borderRadius: 9,
+            background:
+              "linear-gradient(135deg, #1a6dd4 0%, #287fe2 100%)",
+            boxShadow: "0 6px 16px rgba(26,109,212,0.24)",
+            color: "#fff",
+            cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
+          <Search size={16} />
+          Rechercher un bien
+        </button>
       </div>
     </div>
   );

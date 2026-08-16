@@ -1,4 +1,6 @@
-/* ─── TYPES ─── */
+// ============================================================
+// FILE: src/types/index.ts
+// ============================================================
 
 export interface Listing {
   id: number;
@@ -10,6 +12,9 @@ export interface Listing {
   bathrooms: number;
   type: string;
   image: string;
+  images?: string[];
+  description?: string;
+  features?: string[];
   isNew: boolean;
   isFavorite: boolean;
 }

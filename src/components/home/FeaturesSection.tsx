@@ -1,30 +1,177 @@
-import { Wrench, Headphones, Users, Clock, CheckCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Headphones,
+  Users,
+  Wrench,
+} from "lucide-react";
 
-/* ═══════════════════ FEATURES ═══════════════════ */
+const FEATURES = [
+  {
+    icon: Clock,
+    title: "Recherche rapide",
+    description:
+      "Nous vous aidons à trouver un logement adapté dans les meilleurs délais.",
+  },
+  {
+    icon: Users,
+    title: "Vente de votre bien",
+    description:
+      "Nous vous accompagnons pour vendre votre terrain, maison ou appartement.",
+  },
+  {
+    icon: CheckCircle,
+    title: "Accompagnement complet",
+    description:
+      "De votre premier contact jusqu'à la finalisation de votre projet.",
+  },
+  {
+    icon: Wrench,
+    title: "Multiservices",
+    description:
+      "Plomberie, électricité, peinture, nettoyage et entretien de vos biens.",
+  },
+  {
+    icon: Headphones,
+    title: "Conseillers à votre écoute",
+    description:
+      "Une équipe disponible pour répondre à vos questions et vous orienter.",
+  },
+];
 
 export default function FeaturesSection() {
-  const features = [
-    { icon: <Clock size={28} />, title: "Recherche de logement rapide", desc: "Nous trouverons votre logement qui vous convient dans les meilleurs delais." },
-    { icon: <Users size={28} />, title: "Vente de votre bien", desc: "Nous trouverons un acheteur de votre bien (Terrain, Maison, Appartement) dans les meilleurs delais." },
-    { icon: <CheckCircle size={28} />, title: "Accompagnement complet", desc: "Du premier contact jusqu'a la signature, nous vous guidons a chaque etape." },
-    { icon: <Wrench size={28} />, title: "Multiservices", desc: "Plomberie, electricite, peinture, nettoyage - tous vos besoins de maintenance." },
-    { icon: <Headphones size={28} />, title: "Conseillers a votre ecoute", desc: "Des conseillers professionnels a votre ecoute gratuitement." },
-  ];
   return (
-    <section style={{ padding: "64px 24px", background: "#f7f9fc", fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#1a6dd4", textTransform: "uppercase", letterSpacing: "2px" }}>Nos services</span>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 700, color: "#0a2e5c", marginTop: 10 }}>Pourquoi choisir ENAFIM ?</h2>
+    <section
+      style={{
+        padding: "30px 16px 36px",
+        background: "#f7f9fc",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      <style suppressHydrationWarning>{`
+        .features-header {
+          margin-bottom: 18px;
+          text-align: center;
+        }
+
+        .features-carousel {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .feature-card {
+          min-width: 0;
+          padding: 18px 14px;
+          border: 1px solid #e5ebf2;
+          border-radius: 14px;
+          background: #fff;
+          text-align: center;
+        }
+
+        .feature-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          margin: 0 auto 11px;
+          border-radius: 12px;
+          background: #edf5ff;
+          color: #1a6dd4;
+        }
+
+        .feature-title {
+          margin: 0;
+          color: #0a2e5c;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.25;
+        }
+
+        .feature-description {
+          margin: 7px 0 0;
+          color: #718198;
+          font-size: 12px;
+          line-height: 1.55;
+        }
+
+        @media (max-width: 768px) {
+          .features-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 2px 2px 12px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .features-carousel::-webkit-scrollbar {
+            display: none;
+          }
+
+          .feature-card {
+            flex: 0 0 78vw;
+            max-width: 300px;
+            scroll-snap-align: start;
+          }
+        }
+      `}</style>
+
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 1180,
+          margin: "0 auto",
+        }}
+      >
+        <div className="features-header">
+          <span
+            style={{
+              display: "block",
+              marginBottom: 5,
+              color: "#1a6dd4",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "1.6px",
+              textTransform: "uppercase",
+            }}
+          >
+            Nos services
+          </span>
+
+          <h2
+            style={{
+              margin: 0,
+              color: "#0a2e5c",
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "clamp(24px, 6vw, 38px)",
+              lineHeight: 1.1,
+            }}
+          >
+            Pourquoi choisir ENAFIM ?
+          </h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 20 }}>
-          {features.map((f, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: 18, padding: "28px 22px", border: "1px solid #e8edf3", textAlign: "center" }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: "linear-gradient(135deg, #f0f6ff 0%, #e8f4fd 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a6dd4", margin: "0 auto 16px" }}>{f.icon}</div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0a2e5c", marginBottom: 8, lineHeight: 1.35 }}>{f.title}</h3>
-              <p style={{ fontSize: 13, color: "#8a9bb5", lineHeight: 1.7 }}>{f.desc}</p>
-            </div>
-          ))}
+
+        <div className="features-carousel">
+          {FEATURES.map((feature) => {
+            const Icon = feature.icon;
+
+            return (
+              <article className="feature-card" key={feature.title}>
+                <div className="feature-icon">
+                  <Icon size={22} strokeWidth={1.8} />
+                </div>
+
+                <h3 className="feature-title">{feature.title}</h3>
+
+                <p className="feature-description">
+                  {feature.description}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

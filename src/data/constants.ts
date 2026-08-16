@@ -14,7 +14,7 @@ export const NAV_LINKS = [
   { label: "Acheter", href: "#acheter" },
   { label: "Louer", href: "#louer" },
   { label: "Vendre", href: "#vendre" },
-  { label: "Multiservices", href: "#multiservices" },
+  { label: "Multiservices", href: "multiservices" },
 ];
 
 export const PROPERTY_TYPES = ["Tous types", "Appartement", "Maison", "Terrain-Vide", "Chambre-Studio", "Villa"];
