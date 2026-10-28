@@ -2,6 +2,7 @@
 
 import { Mail, MapPin, Phone } from "lucide-react";
 import { LOGO_SRC } from "../../data/constants";
+import { useContactModal } from "../contact/ContactModal";
 
 const FOOTER_LINKS = [
   { label: "Accueil", href: "/" },
@@ -12,6 +13,8 @@ const FOOTER_LINKS = [
 ];
 
 export default function Footer() {
+  const { openContact } = useContactModal();
+
   return (
     <footer
       style={{
@@ -25,31 +28,31 @@ export default function Footer() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 28px;
+          gap: 32px;
           max-width: 1180px;
           margin: 0 auto;
-          padding: 24px;
+          padding: 28px 24px;
         }
 
         .compact-footer-brand {
           display: flex;
           flex-shrink: 0;
           align-items: center;
-          gap: 9px;
+          gap: 10px;
         }
 
         .compact-footer-nav {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 18px;
+          gap: 22px;
           flex-wrap: wrap;
         }
 
         .compact-footer-nav a,
         .compact-footer-contact a {
-          color: rgba(255,255,255,0.68);
-          font-size: 12px;
+          color: rgba(255,255,255,0.72);
+          font-size: 15px;
           text-decoration: none;
           white-space: nowrap;
         }
@@ -63,21 +66,48 @@ export default function Footer() {
           display: flex;
           flex-shrink: 0;
           align-items: center;
-          gap: 14px;
+          gap: 18px;
         }
 
         .compact-footer-contact-item {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
+          font-size: 15px;
+          color: rgba(255,255,255,0.72);
         }
 
         .compact-footer-bottom {
-          padding: 12px 18px;
+          padding: 14px 18px;
           border-top: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.38);
-          font-size: 10px;
+          color: rgba(255,255,255,0.5);
+          font-size: 13px;
           text-align: center;
+        }
+
+        @media (min-width: 851px) {
+          .compact-footer-main {
+            display: grid;
+            grid-template-columns: 0.55fr auto 1.45fr;
+            align-items: center;
+            gap: 24px;
+            max-width: none;
+            padding: 26px 48px;
+          }
+
+          .compact-footer-brand {
+            justify-self: start;
+          }
+
+          .compact-footer-nav {
+            justify-self: start;
+            flex-wrap: nowrap;
+            gap: 44px;
+          }
+
+          .compact-footer-contact {
+            justify-self: end;
+          }
         }
 
         @media (max-width: 850px) {
@@ -92,6 +122,12 @@ export default function Footer() {
 
           .compact-footer-contact {
             gap: 9px;
+          }
+
+          .compact-footer-nav a,
+          .compact-footer-contact a,
+          .compact-footer-contact-item {
+            font-size: 13px;
           }
 
           .compact-footer-contact-item span {
@@ -122,7 +158,7 @@ export default function Footer() {
 
           .compact-footer-contact-item span {
             display: inline;
-            font-size: 11px;
+            font-size: 12px;
           }
         }
 
@@ -162,8 +198,8 @@ export default function Footer() {
             src={LOGO_SRC}
             alt="ENAFIM Guinée"
             style={{
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               padding: 2,
               borderRadius: 6,
               background: "#fff",
@@ -174,7 +210,7 @@ export default function Footer() {
           <span
             style={{
               fontFamily: "'Playfair Display', serif",
-              fontSize: 18,
+              fontSize: 21,
               fontWeight: 700,
               whiteSpace: "nowrap",
             }}
@@ -198,27 +234,34 @@ export default function Footer() {
         </nav>
 
         <div className="compact-footer-contact">
-          <a
-            href="tel:+224620417563"
+          <button
+            type="button"
             className="compact-footer-contact-item"
-            aria-label="Téléphoner à ENAFIM"
+            aria-label="Contacter ENAFIM"
+            onClick={() => openContact()}
+            style={{
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              font: "inherit",
+            }}
           >
-            <Phone size={14} color="#7bb7ff" />
-            <span>+224 620 41 75 63</span>
-          </a>
+            <Phone size={16} color="#7bb7ff" />
+            <span>+224 627 04 02 80</span>
+          </button>
 
           <a
             href="mailto:enafimgn0225@gmail.com"
             className="compact-footer-contact-item"
             aria-label="Envoyer un email à ENAFIM"
           >
-            <Mail size={14} color="#7bb7ff" />
+            <Mail size={16} color="#7bb7ff" />
             <span>enafimgn0225@gmail.com</span>
           </a>
 
           <span className="compact-footer-contact-item">
-            <MapPin size={14} color="#7bb7ff" />
-            <span>Conakry</span>
+            <MapPin size={16} color="#7bb7ff" />
+            <span>Conakry, Station Shell, Rond-Point T5</span>
           </span>
         </div>
       </div>

@@ -66,6 +66,7 @@ export const LISTINGS: Listing[] = [
     rooms: 1,
     bathrooms: 1,
     type: "Chambre-Studio",
+    priority: 50,
     image:
       "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&h=600&fit=crop",
     images: [
@@ -92,6 +93,7 @@ export const LISTINGS: Listing[] = [
     rooms: 0,
     bathrooms: 0,
     type: "Terrain-Vide",
+    status: "sold",
     image:
       "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&h=600&fit=crop",
     images: [
@@ -171,6 +173,7 @@ export const LISTINGS: Listing[] = [
     surface: 240,
     rooms: 7,
     bathrooms: 4,
+    status: "rented",
     type: "Villa",
     image:
       "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=900&h=600&fit=crop",
@@ -224,6 +227,7 @@ export const LISTINGS: Listing[] = [
     price: 9500000,
     surface: 165,
     rooms: 5,
+    priority: 20,
     bathrooms: 2,
     type: "Maison",
     image:

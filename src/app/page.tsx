@@ -1,7 +1,3 @@
-// ============================================================
-// FICHIER : src/app/page.tsx
-// ============================================================
-
 "use client";
 
 import { useState } from "react";
@@ -36,7 +32,6 @@ function parseBudget(value: string): number | undefined {
 export default function HomePage() {
   const [activeFilters, setActiveFilters] =
     useState<SearchFilters>(DEFAULT_FILTERS);
-
   const [resetVersion, setResetVersion] = useState(0);
 
   const filteredListings = listingRepository.findAll({
@@ -70,7 +65,7 @@ export default function HomePage() {
       <section
         id="listings"
         style={{
-          padding: "24px 16px 38px",
+          padding: "32px 24px 48px",
           background: "#fff",
           fontFamily: "'DM Sans', sans-serif",
           scrollMarginTop: 82,
@@ -81,8 +76,8 @@ export default function HomePage() {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-bottom: 22px;
           }
 
           .listings-heading-actions {
@@ -117,10 +112,16 @@ export default function HomePage() {
             color: #1a6dd4;
           }
 
-          @media (max-width: 560px) {
+          @media (max-width: 768px) {
+            #listings {
+              padding-right: 16px !important;
+              padding-left: 16px !important;
+            }
+
             .listings-heading {
               align-items: flex-start;
               gap: 8px;
+              margin-bottom: 16px;
             }
 
             .listings-heading-actions {
@@ -141,7 +142,7 @@ export default function HomePage() {
         <div
           style={{
             width: "100%",
-            maxWidth: 1180,
+            maxWidth: 1440,
             margin: "0 auto",
           }}
         >
@@ -150,7 +151,7 @@ export default function HomePage() {
               <span
                 style={{
                   display: "block",
-                  marginBottom: 4,
+                  marginBottom: 5,
                   color: "#1a6dd4",
                   fontSize: 10,
                   fontWeight: 700,
@@ -167,7 +168,7 @@ export default function HomePage() {
                   overflow: "hidden",
                   color: "#0a2e5c",
                   fontFamily: "'Playfair Display', serif",
-                  fontSize: "clamp(22px, 6vw, 38px)",
+                  fontSize: "clamp(22px, 4vw, 38px)",
                   lineHeight: 1.1,
                   fontWeight: 700,
                   textOverflow: "ellipsis",

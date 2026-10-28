@@ -11,6 +11,8 @@ export interface Listing {
   rooms: number;
   bathrooms: number;
   type: string;
+  priority?: number;
+  status?: "sold" | "rented";
   image: string;
   images?: string[];
   description?: string;

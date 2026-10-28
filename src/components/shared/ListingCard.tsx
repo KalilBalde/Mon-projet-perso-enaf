@@ -21,11 +21,34 @@ import { formatPrice } from "../../utils/format";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&h=600&fit=crop";
 
+interface StatusBadge {
+  label: string;
+  background: string;
+  color: string;
+}
+
+function getStatusBadge(listing: Listing): StatusBadge | null {
+  if (listing.status === "sold") {
+    return { label: "Vendu", background: "#c0392b", color: "#fff" };
+  }
+
+  if (listing.status === "rented") {
+    return { label: "Déjà loué", background: "#e67e22", color: "#fff" };
+  }
+
+  if (listing.isNew) {
+    return { label: "Nouveau", background: "#1a6dd4", color: "#fff" };
+  }
+
+  return null;
+}
+
 export default function ListingCard({ listing }: { listing: Listing }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(listing.isFavorite);
 
   const isTerrain = listing.type === "Terrain-Vide";
+  const statusBadge = getStatusBadge(listing);
   const listingSlug = listingRepository.getSlug(listing);
 
   return (
@@ -97,7 +120,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             }}
           />
 
-          {listing.isNew && (
+          {statusBadge && (
             <span
               style={{
                 position: "absolute",
@@ -105,15 +128,15 @@ export default function ListingCard({ listing }: { listing: Listing }) {
                 left: 12,
                 padding: "5px 9px",
                 borderRadius: 7,
-                background: "#1a6dd4",
-                color: "#fff",
+                background: statusBadge.background,
+                color: statusBadge.color,
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
               }}
             >
-              Nouveau
+              {statusBadge.label}
             </span>
           )}
 

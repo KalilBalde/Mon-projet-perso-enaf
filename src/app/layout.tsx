@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
+import { ContactModalProvider } from "../components/contact/ContactModal";
 
 export const metadata: Metadata = {
   title: "ENAFIM Guinée",
@@ -360,9 +361,11 @@ export default function RootLayout({
       </head>
 
       <body>
-        <Navbar />
-        {children}
-        <Footer />
+        <ContactModalProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </ContactModalProvider>
       </body>
     </html>
   );

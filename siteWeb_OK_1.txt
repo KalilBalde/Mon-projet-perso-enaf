@@ -254,7 +254,7 @@ Guinée
     <div style={{ display: "flex", alignItems: "center", gap: 10 }} className="desktop-nav">
       <a href="#contact" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#666", textDecoration: "none" }}>
         <Phone size={14} />
-        +224 620 41 75 63
+        +224 627 04 02 80
       </a>
       <a
         href="#nous-connaitre"
@@ -813,7 +813,7 @@ onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "rgba(255,255,255,
 <h4 style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginBottom: 18, textTransform: "uppercase", letterSpacing: "1px" }}>Contact</h4>
 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
 <Phone size={14} color="#5ba3f5" />
-<span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>+224 620 41 75 63</span>
+<span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>+224 627 04 02 80</span>
 </div>
 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
 <Mail size={14} color="#5ba3f5" />

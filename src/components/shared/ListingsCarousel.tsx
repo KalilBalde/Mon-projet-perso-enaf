@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Listing } from "../../types";
 import ListingCard from "./ListingCard";
@@ -9,48 +9,52 @@ interface ListingsCarouselProps {
   listings: Listing[];
 }
 
-type ListingSlot = Listing | null;
+interface ListingColumn {
+  top: Listing;
+  bottom: Listing;
+}
 
-function splitListings(
+const DESKTOP_VISIBLE_COLUMNS = 4;
+const DESKTOP_CARDS_PER_COLUMN = 2;
+
+function getCircularListing(
   listings: Listing[],
-  groupSize: number,
-): ListingSlot[][] {
-  const groups: ListingSlot[][] = [];
+  index: number,
+): Listing {
+  const length = listings.length;
+  const safeIndex = ((index % length) + length) % length;
 
-  for (let index = 0; index < listings.length; index += groupSize) {
-    const group = listings.slice(index, index + groupSize) as ListingSlot[];
+  return listings[safeIndex];
+}
 
-    while (group.length < groupSize) {
-      group.push(null);
-    }
+function getVisibleColumns(
+  listings: Listing[],
+  startCardIndex: number,
+): ListingColumn[] {
+  const columns: ListingColumn[] = [];
 
-    groups.push(group);
+  for (
+    let column = 0;
+    column < DESKTOP_VISIBLE_COLUMNS + 1;
+    column += 1
+  ) {
+    const topIndex =
+      startCardIndex + column * DESKTOP_CARDS_PER_COLUMN;
+
+    columns.push({
+      top: getCircularListing(listings, topIndex),
+      bottom: getCircularListing(listings, topIndex + 1),
+    });
   }
 
-  return groups;
+  return columns;
 }
 
 export default function ListingsCarousel({
   listings,
 }: ListingsCarouselProps) {
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const listingGroups = splitListings(listings, 6);
-
-  const moveCarousel = (direction: "previous" | "next") => {
-    const carousel = carouselRef.current;
-
-    if (!carousel) {
-      return;
-    }
-
-    carousel.scrollBy({
-      left:
-        direction === "next"
-          ? carousel.clientWidth * 0.86
-          : -carousel.clientWidth * 0.86,
-      behavior: "smooth",
-    });
-  };
+  const [desktopCardIndex, setDesktopCardIndex] = useState(0);
+  const mobileViewRef = useRef<HTMLDivElement>(null);
 
   if (listings.length === 0) {
     return (
@@ -71,56 +75,100 @@ export default function ListingsCarousel({
     );
   }
 
+  const visibleColumns = getVisibleColumns(
+    listings,
+    desktopCardIndex,
+  );
+
+    const scrollMobile = (direction: "previous" | "next") => {
+    const view = mobileViewRef.current;
+
+    if (!view) {
+      return;
+    }
+
+    const step = view.clientWidth * 0.88;
+    const maxScroll = view.scrollWidth - view.clientWidth;
+    const atStart = view.scrollLeft <= 4;
+    const atEnd = view.scrollLeft >= maxScroll - 4;
+
+    if (direction === "next") {
+      view.scrollTo({
+        left: atEnd ? 0 : view.scrollLeft + step,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    view.scrollTo({
+      left: atStart ? maxScroll : view.scrollLeft - step,
+      behavior: "smooth",
+    });
+  };
+
+  const moveNext = () => {
+    setDesktopCardIndex(
+      (currentIndex) =>
+        (currentIndex + DESKTOP_CARDS_PER_COLUMN) %
+        listings.length,
+    );
+
+    scrollMobile("next");
+  };
+
+  const movePrevious = () => {
+    setDesktopCardIndex(
+      (currentIndex) =>
+        (currentIndex -
+          DESKTOP_CARDS_PER_COLUMN +
+          listings.length) %
+        listings.length,
+    );
+
+    scrollMobile("previous");
+  };
+
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div className="listings-carousel">
       <style suppressHydrationWarning>{`
-        .listings-carousel-viewport {
+        .listings-carousel {
+          position: relative;
           width: 100%;
-          overflow-x: auto;
-          overflow-y: hidden;
-          scroll-behavior: smooth;
-          scroll-snap-type: x mandatory;
-          scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
         }
 
-        .listings-carousel-viewport::-webkit-scrollbar {
-          display: none;
-        }
-
-        .listings-groups {
-          display: flex;
-          align-items: stretch;
-          gap: 20px;
-          width: max-content;
-          padding: 2px 2px 12px;
-        }
-
-        .listings-group {
+        .desktop-listings-view {
           display: grid;
-          flex: 0 0 calc(100vw - 52px);
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          grid-template-rows: repeat(2, minmax(0, 1fr));
-          gap: 16px;
-          width: calc(100vw - 52px);
-          max-width: 1144px;
-          scroll-snap-align: start;
+          grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 0.10fr);
+          gap: 18px;
+          width: 100%;
+          overflow: hidden;
         }
 
-        .listing-group-item {
+        .desktop-listing-column {
+          display: grid;
+          grid-template-rows: repeat(2, minmax(0, 1fr));
+          gap: 18px;
+          min-width: 0;
+        }
+
+        .desktop-listing-slot {
           display: flex;
           min-width: 0;
-          width: 100%;
           min-height: 0;
         }
 
-        .listing-group-item > article {
+        .desktop-listing-slot > article {
           width: 100%;
         }
 
-        .listing-group-item-empty {
-          visibility: hidden;
+        .desktop-listing-column-preview {
+          overflow: hidden;
+          opacity: 0.18;
           pointer-events: none;
+        }
+
+        .mobile-listings-view {
+          display: none;
         }
 
         .listings-carousel-button {
@@ -130,8 +178,9 @@ export default function ListingsCarousel({
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 42px;
-          height: 42px;
+          width: 40px;
+          height: 40px;
+          padding: 0;
           border: 1px solid #dce5ef;
           border-radius: 50%;
           background: #fff;
@@ -154,39 +203,43 @@ export default function ListingsCarousel({
           right: -14px;
         }
 
-        @media (min-width: 1200px) {
-          .listings-group {
-            flex-basis: 1144px;
-            width: 1144px;
+        @media (max-width: 1100px) and (min-width: 769px) {
+          .desktop-listings-view {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.10fr);
           }
         }
 
         @media (max-width: 768px) {
-          .listings-groups {
-            gap: 14px;
-          }
-
-          .listings-group {
-            display: flex;
-            flex: 0 0 auto;
-            gap: 14px;
-            width: max-content;
-            max-width: none;
-          }
-
-          .listing-group-item {
-            flex: 0 0 84vw;
-            width: 84vw;
-            max-width: 340px;
-          }
-
-          .listing-group-item-empty {
+          .desktop-listings-view {
             display: none;
           }
 
+          .mobile-listings-view {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 2px 4px 12px 2px;
+          }
+
+          .mobile-listings-view::-webkit-scrollbar {
+            display: none;
+          }
+
+          .mobile-listing-card {
+            flex: 0 0 88vw;
+            width: 88vw;
+            max-width: 340px;
+            scroll-snap-align: center;
+          }
+
           .listings-carousel-button {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
           }
 
           .listings-carousel-button-left {
@@ -199,59 +252,58 @@ export default function ListingsCarousel({
         }
       `}</style>
 
-      <div
-        ref={carouselRef}
-        className="listings-carousel-viewport"
-      >
-        <div className="listings-groups">
-          {listingGroups.map((group, groupIndex) => (
-            <div
-              className="listings-group"
-              key={`listing-group-${groupIndex}`}
-            >
-              {group.map((listing, listingIndex) => {
-                if (!listing) {
-                  return (
-                    <div
-                      key={`empty-slot-${groupIndex}-${listingIndex}`}
-                      className="listing-group-item listing-group-item-empty"
-                      aria-hidden="true"
-                    />
-                  );
-                }
+      <div className="desktop-listings-view">
+        {visibleColumns.map((column, columnIndex) => {
+          const isPreview =
+            columnIndex === DESKTOP_VISIBLE_COLUMNS;
 
-                return (
-                  <div
-                    className="listing-group-item"
-                    key={listing.id}
-                  >
-                    <ListingCard listing={listing} />
-                  </div>
-                );
-              })}
+          return (
+            <div
+              key={`${column.top.id}-${column.bottom.id}-${columnIndex}`}
+              className={`desktop-listing-column ${
+                isPreview
+                  ? "desktop-listing-column-preview"
+                  : ""
+              }`}
+            >
+              <div className="desktop-listing-slot">
+                <ListingCard listing={column.top} />
+              </div>
+
+              <div className="desktop-listing-slot">
+                <ListingCard listing={column.bottom} />
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {listings.length > 6 && (
+      <div className="mobile-listings-view" ref={mobileViewRef}>
+        {listings.map((listing) => (
+          <div key={listing.id} className="mobile-listing-card">
+            <ListingCard listing={listing} />
+          </div>
+        ))}
+      </div>
+
+      {listings.length > 1 && (
         <>
           <button
             type="button"
             className="listings-carousel-button listings-carousel-button-left"
             aria-label="Afficher les annonces précédentes"
-            onClick={() => moveCarousel("previous")}
+            onClick={movePrevious}
           >
-            <ChevronLeft size={21} />
+            <ChevronLeft size={20} />
           </button>
 
           <button
             type="button"
             className="listings-carousel-button listings-carousel-button-right"
             aria-label="Afficher les annonces suivantes"
-            onClick={() => moveCarousel("next")}
+            onClick={moveNext}
           >
-            <ChevronRight size={21} />
+            <ChevronRight size={20} />
           </button>
         </>
       )}

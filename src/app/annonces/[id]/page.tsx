@@ -513,7 +513,7 @@ export default function ListingDetailsPage({
             </strong>
 
             <a
-              href="tel:+224620417563"
+              href="tel:+224627040280"
               style={{
                 display: "flex",
                 justifyContent: "center",

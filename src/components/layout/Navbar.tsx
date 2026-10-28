@@ -8,10 +8,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Info, Menu, Phone, User, Wrench, X } from "lucide-react";
 import { LOGO_SRC, NAV_LINKS } from "../../data/constants";
+import { useContactModal } from "../contact/ContactModal";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { openContact } = useContactModal();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,10 +80,20 @@ export default function Navbar() {
         </div>
 
         <div className="desktop-nav navbar-actions">
-          <a href="tel:+224620417563" className="navbar-phone">
+          <button
+            type="button"
+            className="navbar-phone"
+            onClick={() => openContact()}
+            style={{
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              font: "inherit",
+            }}
+          >
             <Phone size={14} />
-            <span>+224 620 41 75 63</span>
-          </a>
+            <span>+224 627 04 02 80</span>
+          </button>
 
           <Link
             href="#nous-connaitre"
@@ -170,14 +182,22 @@ export default function Navbar() {
             Nous connaître
           </a>
 
-          <a
-            href="tel:+224620417563"
+          <button
+            type="button"
             className="mobile-menu-primary-button"
-            onClick={closeMobileMenu}
+            style={{
+              border: "none",
+              cursor: "pointer",
+              font: "inherit",
+            }}
+            onClick={() => {
+              closeMobileMenu();
+              openContact();
+            }}
           >
             <Phone size={16} />
-            Appeler ENAFIM
-          </a>
+            Nous contacter
+          </button>
         </div>
       )}
     </nav>

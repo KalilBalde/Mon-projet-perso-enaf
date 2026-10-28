@@ -191,7 +191,7 @@ export default function MultiservicesPage() {
             <p>Notre équipe vous répond rapidement.</p>
           </div>
 
-          <a href="tel:+224620417563" className={styles.contactButton}>
+          <a href="tel:+224627040280" className={styles.contactButton}>
             <Phone size={16} />
             Nous contacter
           </a>

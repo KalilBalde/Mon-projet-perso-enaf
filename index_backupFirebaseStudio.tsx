@@ -92,7 +92,7 @@ transition: "box-shadow 0.3s", fontFamily: "‘DM Sans’, sans-serif",
     {/* Right */}
     <div style={{ display: "flex", alignItems: "center", gap: 10 }} className="desktop-nav">
       <a href="#contact" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#666", textDecoration: "none" }}>
-        <Phone size={14} /> +224 620 41 75 63
+        <Phone size={14} /> +224 627 04 02 80
       </a>
       <a href="#nous-connaitre" style={{ padding: "9px 18px", color: "#0a2e5c", border: "2px solid #d0dbe8", borderRadius: 10, fontSize: 13, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}
         onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = "#1a6dd4"; (e.target as HTMLElement).style.color = "#1a6dd4"; }}
@@ -330,7 +330,7 @@ onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "rgba(255,255,255,
 </div>
 <div style={{ flex: "0 0 auto" }}>
 <h4 style={{ color: "#fff", fontSize: 13, fontWeight: 700, marginBottom: 18, textTransform: "uppercase", letterSpacing: "1px" }}>Contact</h4>
-<div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}><Phone size={14} color="#5ba3f5" /><span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>+224 620 41 75 63</span></div>
+<div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}><Phone size={14} color="#5ba3f5" /><span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>+224 627 04 02 80</span></div>
 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}><Mail size={14} color="#5ba3f5" /><span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>enafimgn0225@gmail.com</span></div>
 <div style={{ display: "flex", alignItems: "center", gap: 8 }}><MapPin size={14} color="#5ba3f5" /><span style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>Conakry, Guinee</span></div>
 </div>

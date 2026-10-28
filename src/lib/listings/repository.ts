@@ -70,8 +70,12 @@ export const listingRepository: ListingRepository = {
       matchesFilters(listing, filters),
     );
 
+    const sortedListings = [...filteredListings].sort(
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+    );
+
     return paginateListings(
-      filteredListings,
+      sortedListings,
       filters.page,
       filters.limit,
     );

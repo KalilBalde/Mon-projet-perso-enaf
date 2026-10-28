@@ -42,6 +42,8 @@ Le dépôt GitHub personnel est la source de référence du projet.
 
 Environ 95 % des utilisateurs utiliseront le site depuis un smartphone. Le smartphone est donc la référence principale pour les décisions de design, d'ergonomie et de performance.
 
+Toujours anticiper le besoin futur de faire deux applications mobiles natives pour Android et iOS, qui devront consommer les mêmes données que le site web.
+
 Respecter les règles suivantes :
 
 - Concevoir d'abord pour des écrans de 320 à 480 pixels.
