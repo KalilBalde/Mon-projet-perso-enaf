@@ -14,9 +14,15 @@ export const NAV_LINKS = [
   { label: "Acheter", href: "#acheter" },
   { label: "Louer", href: "#louer" },
   { label: "Vendre", href: "#vendre" },
-  { label: "Multiservices", href: "#multiservices" },
+  { label: "Multiservices", href: "/multiservices" },
 ];
 
 export const PROPERTY_TYPES = ["Tous types", "Appartement", "Maison", "Terrain-Vide", "Chambre-Studio", "Villa"];
 
 export const QUARTIERS = ["Tous les quartiers", "Cimenterie", "Kagbelen", "Sonfonia", "Cite", "Cosa", "Bambeto", "Lambagni", "Kipe", "Hamdallaye", "Nongo"];
+
+export const CONTACT_PHONE_DISPLAY = "+224 627 04 02 80";
+export const CONTACT_PHONE_TEL = "+224627040280";
+export const CONTACT_PHONE_WHATSAPP = "224627040280";
+export const CONTACT_WHATSAPP_MESSAGE =
+  "Bonjour ENAFIM Guinée, je vous contacte depuis votre site web.";

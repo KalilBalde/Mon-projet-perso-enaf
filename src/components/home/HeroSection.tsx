@@ -1,64 +1,217 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { SearchFilters } from "../../types";
 import { HERO_SLIDES } from "../../data/constants";
 import SearchBar from "../shared/SearchBar";
 
-/* ═══════════════════ HERO SLIDER ═══════════════════ */
+interface HeroSectionProps {
+  onSearch: (filters: SearchFilters) => void;
+}
 
-export default function HeroSection() {
+export default function HeroSection({ onSearch }: HeroSectionProps) {
   const [slide, setSlide] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startTimer = () => {
-    if (timer.current) clearInterval(timer.current);
-    timer.current = setInterval(() => setSlide((p) => (p + 1) % HERO_SLIDES.length), 5500);
+    if (timer.current) {
+      clearInterval(timer.current);
+    }
+
+    timer.current = setInterval(() => {
+      setSlide(
+        (currentSlide) => (currentSlide + 1) % HERO_SLIDES.length,
+      );
+    }, 5500);
   };
-  useEffect(() => { startTimer(); return () => { if (timer.current) clearInterval(timer.current); }; }, []);
-  const goTo = (i: number) => { setSlide(i); startTimer(); };
+
+  useEffect(() => {
+    startTimer();
+
+    return () => {
+      if (timer.current) {
+        clearInterval(timer.current);
+      }
+    };
+  }, []);
+
+  const goToSlide = (slideIndex: number) => {
+    setSlide(slideIndex);
+    startTimer();
+  };
 
   return (
-    <section style={{ fontFamily: "'DM Sans', sans-serif", paddingTop: 80 }}>
-
-      {/* ── Slider zone ── */}
-      <div style={{ position: "relative", height: "clamp(380px, 55vh, 520px)", overflow: "hidden" }}>
-        {HERO_SLIDES.map((src, i) => (
-          <div key={i} style={{ position: "absolute", inset: 0, opacity: slide === i ? 1 : 0, transition: "opacity 1.4s ease-in-out" }}>
-            <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "blur(1px) brightness(0.48)", transform: "scale(1.04)" }} />
+    <section
+      style={{
+        paddingTop: 80,
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          height: "clamp(190px, 23vh, 220px)",
+          minHeight: 150,
+          overflow: "hidden",
+        }}
+      >
+        {HERO_SLIDES.map((source, index) => (
+          <div
+            key={source}
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: slide === index ? 1 : 0,
+              transition: "opacity 1s ease",
+              pointerEvents: slide === index ? "auto" : "none",
+            }}
+          >
+            <img
+              src={source}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "brightness(0.45)",
+              }}
+            />
           </div>
         ))}
-        {/* Overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(10,46,92,0.6) 0%, rgba(10,46,92,0.4) 45%, rgba(10,46,92,0.72) 100%)" }} />
 
-        {/* Arrows */}
-        <button onClick={() => goTo((slide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} className="desktop-nav" style={{ position: "absolute", left: 24, top: "50%", transform: "translateY(-50%)", zIndex: 5, width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
-          <ChevronLeft size={20} color="#fff" />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(10,46,92,0.5), rgba(10,46,92,0.8))",
+          }}
+        />
+
+        <button
+          type="button"
+          className="desktop-nav"
+          aria-label="Image précédente"
+          onClick={() =>
+            goToSlide(
+              (slide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
+            )
+          }
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: 14,
+            zIndex: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 34,
+            height: 34,
+            padding: 0,
+            border: "1px solid rgba(255,255,255,0.25)",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.12)",
+            color: "#fff",
+            cursor: "pointer",
+            transform: "translateY(-50%)",
+          }}
+        >
+          <ChevronLeft size={17} />
         </button>
-        <button onClick={() => goTo((slide + 1) % HERO_SLIDES.length)} className="desktop-nav" style={{ position: "absolute", right: 24, top: "50%", transform: "translateY(-50%)", zIndex: 5, width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>
-          <ChevronRight size={20} color="#fff" />
+
+        <button
+          type="button"
+          className="desktop-nav"
+          aria-label="Image suivante"
+          onClick={() =>
+            goToSlide((slide + 1) % HERO_SLIDES.length)
+          }
+          style={{
+            position: "absolute",
+            top: "50%",
+            right: 14,
+            zIndex: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 34,
+            height: 34,
+            padding: 0,
+            border: "1px solid rgba(255,255,255,0.25)",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.12)",
+            color: "#fff",
+            cursor: "pointer",
+            transform: "translateY(-50%)",
+          }}
+        >
+          <ChevronRight size={17} />
         </button>
 
-        {/* Dots */}
-        <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 10, zIndex: 5 }}>
-          {HERO_SLIDES.map((_, i) => (
-            <button key={i} onClick={() => goTo(i)} style={{ width: slide === i ? 32 : 10, height: 10, borderRadius: 5, background: slide === i ? "#fff" : "rgba(255,255,255,0.35)", border: "none", cursor: "pointer", transition: "all 0.4s" }} />
-          ))}
-        </div>
-
-        {/* Text */}
-        <div style={{ position: "absolute", inset: 0, zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px" }}>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(24px, 4vw, 48px)", fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 12, textAlign: "center", whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "12px 36px 24px",
+            textAlign: "center",
+          }}
+        >
+          <h1
+            style={{
+              maxWidth: 520,
+              margin: 0,
+              color: "#fff",
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "clamp(20px, 5.5vw, 36px)",
+              lineHeight: 1.08,
+              fontWeight: 700,
+            }}
+          >
             Trouvez le bien qui vous ressemble
           </h1>
-          <p style={{ fontSize: "clamp(13px, 1.5vw, 16px)", color: "rgba(255,255,255,0.6)", maxWidth: 480, textAlign: "center", lineHeight: 1.7 }}>
-            Entreprise Africaine de l'Immobilier et du Multiservices.
-          </p>
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 10,
+            left: 0,
+            zIndex: 3,
+            display: "flex",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          {HERO_SLIDES.map((source, index) => (
+            <button
+              type="button"
+              key={source}
+              aria-label={`Afficher l'image ${index + 1}`}
+              onClick={() => goToSlide(index)}
+              style={{
+                width: slide === index ? 20 : 6,
+                height: 6,
+                padding: 0,
+                border: "none",
+                borderRadius: 999,
+                background:
+                  slide === index
+                    ? "#fff"
+                    : "rgba(255,255,255,0.4)",
+                cursor: "pointer",
+              }}
+            />
+          ))}
         </div>
       </div>
 
-      {/* ── Search bar: overlaps slider bottom ── */}
-      <SearchBar />
+      <SearchBar onSearch={onSearch} />
     </section>
   );
 }
