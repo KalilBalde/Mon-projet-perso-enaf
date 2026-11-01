@@ -1,0 +1,112 @@
+.scroller {
+  --compact-image-height: 132px;
+  --card-tag-right: 52px;
+  --card-tag-max: 38%;
+  position: relative;
+}
+
+.track {
+  display: flex;
+  gap: 20px;
+  margin: -10px -4px -12px;
+  padding: 10px 4px 28px;
+  overflow-x: auto;
+  scroll-padding-inline: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.track:focus-visible {
+  outline: 3px solid #1a6dd4;
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.item {
+  display: flex;
+  flex: 0 0 clamp(220px, 21vw, 262px);
+  scroll-snap-align: start;
+}
+
+.item > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.arrow {
+  position: absolute;
+  top: calc(50% - 24px);
+  z-index: 3;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid #e5ebf2;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(10, 46, 92, 0.18);
+  color: #0a2e5c;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.arrow:hover {
+  background: #0a2e5c;
+  color: #fff;
+}
+
+.arrow:focus-visible {
+  outline: 3px solid #1a6dd4;
+  outline-offset: 2px;
+}
+
+.arrowPrev {
+  left: -14px;
+}
+
+.arrowNext {
+  right: -14px;
+}
+
+@media (max-width: 760px) {
+  .scroller {
+    --compact-image-height: 92px;
+    --card-badge-offset: 7px;
+    --card-heart-offset: 6px;
+    --card-heart-size: 28px;
+    --card-status-size: 9px;
+    --card-status-padding: 3px 6px;
+    --card-price-size: 12px;
+    --card-price-padding: 3px 7px;
+    --card-body-padding: 9px 10px 10px;
+    --card-title-size: 13px;
+    --card-meta-size: 11px;
+    --card-meta-gap: 4px;
+    --card-chips-pad-top: 8px;
+  }
+
+  .track {
+    gap: 10px;
+    margin: -10px -16px -12px;
+    padding: 10px 16px 28px;
+    scroll-padding-inline: 16px;
+  }
+
+  .item {
+    flex-basis: min(42%, 156px);
+  }
+
+  .arrow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+}

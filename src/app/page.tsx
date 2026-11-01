@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import HeroSection from "../components/home/HeroSection";
 import StatsSection from "../components/home/StatsSection";
@@ -9,7 +9,8 @@ import CtaSection from "../components/home/CtaSection";
 import ViewAllButton from "../components/shared/ViewAllButton";
 import ListingsCarousel from "../components/shared/ListingsCarousel";
 import { listingRepository } from "../lib/listings/repository";
-import type { SearchFilters } from "../types";
+import { fetchPublishedListings } from "../lib/listings/database";
+import type { Listing, SearchFilters } from "../types";
 
 const DEFAULT_FILTERS: SearchFilters = {
   type: "Tous types",
@@ -33,12 +34,27 @@ export default function HomePage() {
   const [activeFilters, setActiveFilters] =
     useState<SearchFilters>(DEFAULT_FILTERS);
   const [resetVersion, setResetVersion] = useState(0);
+  const [databaseListings, setDatabaseListings] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    void fetchPublishedListings().then((listings) => {
+      if (active) {
+        setDatabaseListings(listings);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredListings = listingRepository.findAll({
     type: activeFilters.type,
     quartier: activeFilters.quartier,
     budgetMax: parseBudget(activeFilters.budgetMax),
-  });
+  }, databaseListings);
 
   const hasActiveSearch =
     activeFilters.type !== "Tous types" ||

@@ -1,4 +1,3 @@
-import { LISTINGS } from "../../data/listings";
 import type { Listing } from "../../types";
 
 export interface ListingFilters {
@@ -10,9 +9,9 @@ export interface ListingFilters {
 }
 
 export interface ListingRepository {
-  findAll(filters?: ListingFilters): Listing[];
-  findById(id: number): Listing | undefined;
-  findBySlug(slug: string): Listing | undefined;
+  findAll(filters?: ListingFilters, additionalListings?: readonly Listing[]): Listing[];
+  findById(id: number, additionalListings?: readonly Listing[]): Listing | undefined;
+  findBySlug(slug: string, additionalListings?: readonly Listing[]): Listing | undefined;
   getSlug(listing: Listing): string;
 }
 
@@ -65,8 +64,8 @@ function paginateListings(
 }
 
 export const listingRepository: ListingRepository = {
-  findAll(filters = {}) {
-    const filteredListings = LISTINGS.filter((listing) =>
+  findAll(filters = {}, additionalListings = []) {
+    const filteredListings = additionalListings.filter((listing) =>
       matchesFilters(listing, filters),
     );
 
@@ -81,12 +80,12 @@ export const listingRepository: ListingRepository = {
     );
   },
 
-  findById(id) {
-    return LISTINGS.find((listing) => listing.id === id);
+  findById(id, additionalListings = []) {
+    return additionalListings.find((listing) => listing.id === id);
   },
 
-  findBySlug(slug) {
-    return LISTINGS.find(
+  findBySlug(slug, additionalListings = []) {
+    return additionalListings.find(
       (listing) => createListingSlug(listing) === slug,
     );
   },

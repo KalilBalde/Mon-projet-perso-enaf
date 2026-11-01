@@ -5,7 +5,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bath,
   BedDouble,
@@ -15,8 +15,10 @@ import {
   Maximize,
 } from "lucide-react";
 import type { Listing } from "../../types";
+import { getFavoriteIds, toggleFavorite } from "../../lib/favorites/storage";
 import { listingRepository } from "../../lib/listings/repository";
 import { formatPrice } from "../../utils/format";
+import styles from "./ListingCard.module.css";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&h=600&fit=crop";
@@ -43,9 +45,19 @@ function getStatusBadge(listing: Listing): StatusBadge | null {
   return null;
 }
 
-export default function ListingCard({ listing }: { listing: Listing }) {
+export default function ListingCard({
+  listing,
+  compact = false,
+}: {
+  listing: Listing;
+  compact?: boolean;
+}) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(listing.isFavorite);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    setIsFavorite(getFavoriteIds().includes(listing.id));
+  }, [listing.id]);
 
   const isTerrain = listing.type === "Terrain-Vide";
   const statusBadge = getStatusBadge(listing);
@@ -53,6 +65,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <article
+      className={compact ? styles.compact : undefined}
       style={{
         position: "relative",
         display: "flex",
@@ -88,7 +101,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           style={{
             position: "relative",
             flexShrink: 0,
-            height: 180,
+            height: compact ? "var(--compact-image-height, 132px)" : 180,
             overflow: "hidden",
             background: "#eaf0f6",
           }}
@@ -124,13 +137,13 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             <span
               style={{
                 position: "absolute",
-                top: 12,
-                left: 12,
-                padding: "5px 9px",
+                top: "var(--card-badge-offset, 12px)",
+                left: "var(--card-badge-offset, 12px)",
+                padding: "var(--card-status-padding, 5px 9px)",
                 borderRadius: 7,
                 background: statusBadge.background,
                 color: statusBadge.color,
-                fontSize: 10,
+                fontSize: "var(--card-status-size, 10px)",
                 fontWeight: 700,
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
@@ -141,11 +154,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           )}
 
           <span
+            className={styles.typeTag}
             style={{
               position: "absolute",
               top: 12,
-              right: 12,
-              maxWidth: "48%",
+              right: "var(--card-tag-right, 12px)",
+              maxWidth: "var(--card-tag-max, 48%)",
               overflow: "hidden",
               padding: "5px 9px",
               borderRadius: 7,
@@ -163,13 +177,13 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           <span
             style={{
               position: "absolute",
-              bottom: 12,
-              left: 12,
-              padding: "7px 10px",
+              bottom: "var(--card-badge-offset, 12px)",
+              left: "var(--card-badge-offset, 12px)",
+              padding: "var(--card-price-padding, 7px 10px)",
               borderRadius: 8,
               background: "rgba(10,46,92,0.9)",
               color: "#fff",
-              fontSize: 14,
+              fontSize: "var(--card-price-size, 14px)",
               fontWeight: 800,
             }}
           >
@@ -182,7 +196,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             display: "flex",
             flexDirection: "column",
             flex: 1,
-            padding: "14px 15px 15px",
+            padding: "var(--card-body-padding, 14px 15px 15px)",
           }}
         >
           <h3
@@ -191,7 +205,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
               overflow: "hidden",
               margin: 0,
               color: "#0a2e5c",
-              fontSize: 15,
+              fontSize: "var(--card-title-size, 15px)",
               fontWeight: 700,
               lineHeight: 1.35,
               WebkitBoxOrient: "vertical",
@@ -206,9 +220,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
               display: "flex",
               alignItems: "center",
               gap: 5,
-              marginTop: 7,
+              marginTop: "var(--card-meta-gap, 7px)",
               color: "#7d8da3",
-              fontSize: 12,
+              fontSize: "var(--card-meta-size, 12px)",
               whiteSpace: "nowrap",
             }}
           >
@@ -222,7 +236,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
               flexWrap: "wrap",
               gap: 6,
               marginTop: "auto",
-              paddingTop: 12,
+              paddingTop: "var(--card-chips-pad-top, 12px)",
               borderTop: "1px solid #eef2f6",
             }}
           >
@@ -240,10 +254,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
                   }`}
                 />
 
-                <FeatureBadge
-                  icon={<Bath size={12} />}
-                  label={`${listing.bathrooms} sdb`}
-                />
+                <span className={styles.extraChip}>
+                  <FeatureBadge
+                    icon={<Bath size={12} />}
+                    label={`${listing.bathrooms} sdb`}
+                  />
+                </span>
               </>
             )}
 
@@ -264,19 +280,17 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             ? `Retirer ${listing.title} des favoris`
             : `Ajouter ${listing.title} aux favoris`
         }
-        onClick={() =>
-          setIsFavorite((currentFavorite) => !currentFavorite)
-        }
+        onClick={() => setIsFavorite(toggleFavorite(listing.id))}
         style={{
           position: "absolute",
-          top: 10,
-          right: 10,
+          top: "var(--card-heart-offset, 10px)",
+          right: "var(--card-heart-offset, 10px)",
           zIndex: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 34,
-          height: 34,
+          width: "var(--card-heart-size, 34px)",
+          height: "var(--card-heart-size, 34px)",
           padding: 0,
           border: "none",
           borderRadius: 9,

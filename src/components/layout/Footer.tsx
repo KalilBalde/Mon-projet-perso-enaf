@@ -41,6 +41,26 @@ export default function Footer() {
           gap: 10px;
         }
 
+        .compact-footer-logo {
+          width: 40px;
+          height: 40px;
+          padding: 2px;
+          border-radius: 6px;
+          background: #fff;
+          object-fit: contain;
+        }
+
+        .compact-footer-wordmark {
+          font-family: 'Playfair Display', serif;
+          font-size: 21px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        .compact-footer-wordmark-accent {
+          color: #7bb7ff;
+        }
+
         .compact-footer-nav {
           display: flex;
           align-items: center;
@@ -75,6 +95,13 @@ export default function Footer() {
           gap: 6px;
           font-size: 15px;
           color: rgba(255,255,255,0.72);
+        }
+
+        .compact-footer-contact-button {
+          border: none;
+          background: none;
+          cursor: pointer;
+          font: inherit;
         }
 
         .compact-footer-bottom {
@@ -138,48 +165,72 @@ export default function Footer() {
         @media (max-width: 620px) {
           .compact-footer-main {
             display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            gap: 18px;
+            grid-template-columns: minmax(0, 1fr);
+            align-items: start;
+            gap: 5px;
+            padding: 8px 12px 7px;
           }
 
-          .compact-footer-brand {
-            grid-row: span 2;
+          .compact-footer-brand,
+          .compact-footer-logo,
+          .compact-footer-wordmark {
+            display: none;
           }
 
           .compact-footer-nav {
-            justify-content: flex-start;
-            gap: 8px 13px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            justify-content: start;
+            gap: 0 8px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
           }
 
           .compact-footer-contact {
-            justify-content: flex-start;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            justify-content: stretch;
+            gap: 3px 8px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+          }
+
+          .compact-footer-nav a {
+            padding: 2px 0;
+            font-size: 11px;
+          }
+
+          .compact-footer-contact-item {
+            display: flex;
+            width: 100%;
+            min-width: 0;
+            gap: 5px;
+            min-height: 22px;
+            text-align: left;
           }
 
           .compact-footer-contact-item span {
             display: inline;
-            font-size: 12px;
-          }
-        }
-
-        @media (max-width: 430px) {
-          .compact-footer-main {
-            grid-template-columns: 1fr;
-            gap: 14px;
-            padding: 18px 14px;
+            min-width: 0;
+            overflow: hidden;
+            font-size: 10px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
 
-          .compact-footer-brand {
-            justify-content: center;
+          .compact-footer-contact-item svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
           }
 
-          .compact-footer-nav,
-          .compact-footer-contact {
-            justify-content: center;
+          .compact-footer-contact-item:last-child {
+            grid-column: 1 / -1;
           }
 
-          .compact-footer-contact {
-            flex-wrap: wrap;
+          .compact-footer-bottom {
+            padding: 7px 10px;
+            font-size: 9px;
           }
         }
       `}</style>
@@ -197,28 +248,13 @@ export default function Footer() {
           <img
             src={LOGO_SRC}
             alt="ENAFIM Guinée"
-            style={{
-              width: 40,
-              height: 40,
-              padding: 2,
-              borderRadius: 6,
-              background: "#fff",
-              objectFit: "contain",
-            }}
+            className="compact-footer-logo"
           />
 
           <span
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: 21,
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-            }}
+            className="compact-footer-wordmark"
           >
-            ENAFIM{" "}
-            <span style={{ color: "#7bb7ff" }}>
-              Guinée
-            </span>
+            ENAFIM <span className="compact-footer-wordmark-accent">Guinée</span>
           </span>
         </a>
 
@@ -236,15 +272,9 @@ export default function Footer() {
         <div className="compact-footer-contact">
           <button
             type="button"
-            className="compact-footer-contact-item"
+            className="compact-footer-contact-item compact-footer-contact-button"
             aria-label="Contacter ENAFIM"
             onClick={() => openContact()}
-            style={{
-              border: "none",
-              background: "none",
-              cursor: "pointer",
-              font: "inherit",
-            }}
           >
             <Phone size={16} color="#7bb7ff" />
             <span>+224 627 04 02 80</span>

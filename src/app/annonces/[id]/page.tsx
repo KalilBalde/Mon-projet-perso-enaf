@@ -14,7 +14,9 @@ import {
   Maximize,
   X,
 } from "lucide-react";
+import { fetchPublishedListings } from "../../../lib/listings/database";
 import { listingRepository } from "../../../lib/listings/repository";
+import type { Listing } from "../../../types";
 import { formatPrice } from "../../../utils/format";
 
 interface ListingDetailsPageProps {
@@ -26,9 +28,106 @@ interface ListingDetailsPageProps {
 export default function ListingDetailsPage({
   params,
 }: ListingDetailsPageProps) {
-  const listing = listingRepository.findBySlug(params.id);
+  const [databaseListings, setDatabaseListings] = useState<Listing[]>([]);
+  const [isDatabaseLoading, setIsDatabaseLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    void fetchPublishedListings()
+      .then((listings) => {
+        if (active) {
+          setDatabaseListings(listings);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsDatabaseLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const listing = listingRepository.findBySlug(params.id, databaseListings);
+  const images = listing
+    ? listing.images?.length
+      ? listing.images
+      : [listing.image]
+    : [];
+
+  const isTerrain = listing?.type === "Terrain-Vide";
+
+  const showPreviousImage = () => {
+    if (!images.length) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) =>
+      currentIndex === 0 ? images.length - 1 : currentIndex - 1,
+    );
+  };
+
+  const showNextImage = () => {
+    if (!images.length) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) =>
+      currentIndex === images.length - 1 ? 0 : currentIndex + 1,
+    );
+  };
+
+  useEffect(() => {
+    if (!isGalleryOpen || !listing) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsGalleryOpen(false);
+      }
+
+      if (event.key === "ArrowLeft") {
+        showPreviousImage();
+      }
+
+      if (event.key === "ArrowRight") {
+        showNextImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isGalleryOpen, images.length]);
+
+  if (!listing && isDatabaseLoading) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          padding: "150px 24px",
+          background: "#fff",
+          color: "#718198",
+          textAlign: "center",
+          fontFamily: "'DM Sans', sans-serif",
+        }}
+      >
+        Chargement de l’annonce...
+      </main>
+    );
+  }
 
   if (!listing) {
     return (
@@ -71,54 +170,6 @@ export default function ListingDetailsPage({
       </main>
     );
   }
-
-  const images = listing.images?.length
-    ? listing.images
-    : [listing.image];
-
-  const isTerrain = listing.type === "Terrain-Vide";
-
-  const showPreviousImage = () => {
-    setActiveImageIndex((currentIndex) =>
-      currentIndex === 0 ? images.length - 1 : currentIndex - 1,
-    );
-  };
-
-  const showNextImage = () => {
-    setActiveImageIndex((currentIndex) =>
-      currentIndex === images.length - 1 ? 0 : currentIndex + 1,
-    );
-  };
-
-  useEffect(() => {
-    if (!isGalleryOpen) {
-      document.body.style.overflow = "";
-      return;
-    }
-
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsGalleryOpen(false);
-      }
-
-      if (event.key === "ArrowLeft") {
-        showPreviousImage();
-      }
-
-      if (event.key === "ArrowRight") {
-        showNextImage();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isGalleryOpen, images.length]);
 
   return (
     <main
