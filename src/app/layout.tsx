@@ -22,7 +22,8 @@ const GLOBAL_CSS = `
 
   body {
     min-width: 320px;
-    overflow-x: hidden;
+    /* clip, not hidden: hidden makes body a scroll container and breaks position: sticky. */
+    overflow-x: clip;
   }
 
   .desktop-nav {
@@ -147,6 +148,18 @@ const GLOBAL_CSS = `
     font-weight: 700;
   }
 
+  .navbar-authenticated {
+    background: #123954;
+  }
+
+  .navbar-auth-status {
+    padding-left: 7px;
+    border-left: 1px solid rgba(255, 255, 255, 0.35);
+    color: #b7ead7;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
   .mobile-menu-panel {
     display: none;
   }
@@ -234,6 +247,18 @@ const GLOBAL_CSS = `
     .mobile-space-link {
       background: #0a2e5c;
       color: #fff;
+    }
+
+    .mobile-space-authenticated {
+      border-color: #b9ded5;
+      background: #123954;
+    }
+
+    .mobile-auth-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6bd0a7;
     }
 
     .mobile-menu-btn {

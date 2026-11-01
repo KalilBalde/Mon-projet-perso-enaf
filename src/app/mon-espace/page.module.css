@@ -1,0 +1,1441 @@
+.page {
+  min-height: calc(100svh - 78px);
+  padding: 104px clamp(16px, 4vw, 48px) 48px;
+  background: #f5f7f7;
+  font-family: "DM Sans", sans-serif;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  gap: 18px;
+  width: min(100%, 1320px);
+  margin: 0 auto;
+}
+
+.brandPanel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 530px;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 34px;
+  border-radius: 8px;
+  background: #123f59;
+  color: #fff;
+}
+
+.brandPanel::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+}
+
+.brandPanel::after {
+  position: absolute;
+  z-index: -1;
+  right: -120px;
+  bottom: -155px;
+  width: 360px;
+  height: 360px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 34px rgba(255, 255, 255, 0.035);
+  content: "";
+}
+
+.brandIdentity {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+}
+
+.brandLogo {
+  width: 76px;
+  height: 52px;
+  padding: 4px;
+  border-radius: 4px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.brandWordmark {
+  display: grid;
+  gap: 2px;
+  line-height: 1;
+}
+
+.brandWordmark strong {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.brandWordmark small {
+  color: #a7ccd0;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.brandCopy {
+  max-width: 430px;
+  padding: 48px 0;
+}
+
+.brandEyebrow,
+.pageEyebrow {
+  color: #edac65;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.brandCopy h2 {
+  margin-top: 16px;
+  font-family: "Playfair Display", serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.brandDescription {
+  max-width: 340px;
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.brandFooter {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #dce8e7;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.brandFooter svg {
+  color: #edac65;
+}
+
+.brandFooterRule {
+  width: 22px;
+  height: 1px;
+  margin: 0 2px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.formStage {
+  display: flex;
+  min-width: 0;
+  min-height: 530px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 42px clamp(28px, 4vw, 58px);
+  border: 1px solid #e1e8e8;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 16px 38px rgba(18, 57, 84, 0.07);
+}
+
+.pageHeader {
+  width: min(100%, 700px);
+  margin: 0 auto 30px;
+}
+
+.pageEyebrow {
+  color: #16847e;
+}
+
+.pageHeader h1 {
+  margin-top: 8px;
+  color: #123954;
+  font-family: "Playfair Display", serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.16;
+}
+
+.pageHeader > p:last-child {
+  margin-top: 8px;
+  color: #637682;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.authPanel,
+.accountPanel,
+.setupNotice {
+  width: min(100%, 700px);
+  gap: 20px;
+}
+
+.accountWelcome {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.accountWelcome h2 {
+  margin-top: 7px;
+}
+
+.connectedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #176450;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.connectedBadge span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2eaa79;
+}
+
+.accountNav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  width: 100%;
+}
+
+.accountNavButton,
+.accountNavActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid #dfe7e7;
+  border-radius: 5px;
+  background: #fff;
+  color: #355465;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.accountNavButton:hover {
+  background: #f7f9f8;
+}
+
+.accountNavActive {
+  border-color: #b9ded5;
+  background: #edf7f3;
+  color: #176450;
+}
+
+.accountSection {
+  width: 100%;
+  padding-top: 20px;
+  border-top: 1px solid #e1e8e8;
+}
+
+.sectionHeading {
+  margin-bottom: 17px;
+}
+
+.sectionHeading h3 {
+  color: #123954;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.sectionHeading p {
+  margin-top: 5px;
+  color: #637682;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.favoriteGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.emptyFavorites {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 16px;
+  border: 1px dashed #cbd9df;
+  border-radius: 6px;
+  color: #137b76;
+  text-align: center;
+}
+
+.emptyFavorites h4 {
+  color: #173c54;
+  font-size: 16px;
+}
+
+.emptyFavorites p {
+  color: #637682;
+  font-size: 13px;
+}
+
+.profileForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.profileForm > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.profileForm input:read-only {
+  background: #f0f3f5;
+  color: #667985;
+}
+
+.profileFeedback {
+  grid-column: 1 / -1;
+  color: #176450;
+  font-size: 13px;
+}
+
+.notificationPreference {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e1e8e8;
+  border-radius: 6px;
+  background: #f7f9f8;
+}
+
+.notificationPreference h4 {
+  color: #173c54;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.notificationPreference p {
+  margin-top: 5px;
+  color: #637682;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.notificationToggle {
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: #87949b;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.notificationToggle span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.18s ease;
+}
+
+.notificationEnabled {
+  background: #17836f;
+}
+
+.notificationEnabled span {
+  transform: translateX(22px);
+}
+
+.notificationToggle:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.profileDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e1e8e8;
+  border-radius: 6px;
+  background: #f7f9f8;
+}
+
+.profileRow {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 14px 16px;
+}
+
+.profileRow:nth-child(odd) {
+  border-right: 1px solid #e1e8e8;
+}
+
+.profileRow:nth-child(n + 3) {
+  border-top: 1px solid #e1e8e8;
+}
+
+.profileRow span {
+  color: #687983;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profileRow strong {
+  overflow-wrap: anywhere;
+  color: #173c54;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.accountLoading {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  color: #637682;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.formHeading {
+  margin: 0 0 22px;
+}
+
+.modalHeading {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.formHeading.modalHeading h2 {
+  font-size: 25px;
+  white-space: nowrap;
+}
+
+.formHeading.modalHeading p {
+  font-size: 14px;
+}
+
+.formHeading h2,
+.accountPanel h2,
+.setupNotice h2 {
+  color: #123954;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.formHeading p {
+  margin-top: 6px;
+  color: #637682;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+}
+
+.modalForm {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.modalForm .submitButton {
+  grid-column: auto;
+  justify-self: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.accountTypeFieldset {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.accountTypeFieldset legend {
+  margin-bottom: 8px;
+  color: #29485a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.accountTypeOptions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.accountTypeOption,
+.accountTypeSelected {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 58px;
+  padding: 10px 13px;
+  border: 1px solid #d0dbe8;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.accountTypeSelected {
+  border-color: #1a6dd4;
+  background: #f2f7ff;
+  box-shadow: inset 0 0 0 1px #1a6dd4;
+}
+
+.accountTypeOption input,
+.accountTypeSelected input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.accountTypeOption:focus-within,
+.accountTypeSelected:focus-within {
+  outline: 3px solid rgba(26, 109, 212, 0.24);
+  outline-offset: 2px;
+}
+
+.accountTypeOption span,
+.accountTypeSelected span {
+  display: grid;
+  gap: 3px;
+}
+
+.accountTypeOption strong,
+.accountTypeSelected strong {
+  color: #0a2e5c;
+  font-size: 14px;
+}
+
+.accountTypeOption small,
+.accountTypeSelected small {
+  color: #718198;
+  font-size: 11px;
+}
+
+.roleRequestNote {
+  grid-column: 1 / -1;
+  margin: -4px 0 2px;
+  color: #536b84;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.signupForm .field:last-of-type {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  color: #29485a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  height: 54px;
+  padding: 0 15px;
+  border: 1px solid #c5d2d7;
+  border-radius: 5px;
+  outline: none;
+  background: #fbfcfc;
+  color: #183c52;
+  font: inherit;
+  font-size: 16px;
+}
+
+.field input:focus {
+  border-color: #16847e;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(22, 132, 126, 0.14);
+}
+
+.passwordControl {
+  position: relative;
+  min-width: 0;
+}
+
+.passwordControl input {
+  padding-right: 54px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #526d7d;
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  background: #eef3f3;
+  color: #123954;
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid #16847e;
+  outline-offset: 1px;
+}
+
+.submitButton,
+.createAccountButton,
+.signOutButton {
+  min-height: 52px;
+  padding: 0 25px;
+  border: 0;
+  border-radius: 5px;
+  background: #124f91;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.submitButton {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-width: 190px;
+  margin-top: 2px;
+}
+
+.submitButton:hover,
+.listingsLink:hover {
+  background: #0c3c70;
+}
+
+.submitButton:disabled,
+.createAccountButton:disabled,
+.signOutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.errorMessage,
+.successMessage {
+  margin: 15px 0 0;
+  padding: 12px 14px;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.errorMessage {
+  border: 1px solid #edc7c2;
+  background: #fff6f4;
+  color: #8d3026;
+}
+
+.successMessage {
+  border: 1px solid #b9ded5;
+  background: #f0faf6;
+  color: #176450;
+}
+
+.resendButton {
+  display: block;
+  margin: 14px auto 0;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: #124f91;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.resendButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.alternateAction {
+  margin-top: 22px;
+  text-align: center;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 15px;
+  color: #72818a;
+  font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+  height: 1px;
+  flex: 1;
+  background: #e4e9ec;
+  content: "";
+}
+
+.createAccountButton {
+  min-width: 230px;
+  background: #d91832;
+}
+
+.createAccountButton:hover {
+  background: #b90f27;
+}
+
+.switchPrompt {
+  color: #637682;
+  font-size: 14px;
+}
+
+.switchPrompt button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #124f91;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.accountPanel {
+  display: grid;
+  justify-items: start;
+  gap: 20px;
+}
+
+.accountWelcome {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.accountWelcome h2 {
+  margin-top: 7px;
+}
+
+.connectedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #176450;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.connectedBadge span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2eaa79;
+}
+
+.profileDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e1e8e8;
+  border-radius: 6px;
+  background: #f7f9f8;
+}
+
+.profileRow {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 14px 16px;
+}
+
+.profileRow:nth-child(odd) {
+  border-right: 1px solid #e1e8e8;
+}
+
+.profileRow:nth-child(n + 3) {
+  border-top: 1px solid #e1e8e8;
+}
+
+.profileRow span {
+  color: #687983;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profileRow strong {
+  overflow-wrap: anywhere;
+  color: #173c54;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.accountLoading {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  color: #637682;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.accountIcon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5f3f0;
+  color: #167b78;
+}
+
+.accountEmail {
+  color: #637682;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.eyebrow {
+  color: #16847e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.accountActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.listingsLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 5px;
+  background: #124f91;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.signOutButton {
+  min-height: 50px;
+  border: 1px solid #c5d2d7;
+  background: #fff;
+  color: #355465;
+  font-size: 14px;
+}
+
+.setupNotice {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 23px;
+  border: 1px solid #e3e9e9;
+  border-radius: 6px;
+  background: #f7f9f8;
+  color: #167b78;
+}
+
+.setupNotice p {
+  margin-top: 6px;
+  color: #637682;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.supportPanel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, 1320px);
+  margin: 18px auto 0;
+  border: 1px solid #dfe7e7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.supportItem {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 14px;
+  min-height: 116px;
+  padding: 20px 25px;
+}
+
+.supportItem + .supportItem {
+  border-left: 1px solid #e5ebeb;
+}
+
+.supportIcon {
+  display: grid;
+  grid-row: span 2;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f2ef;
+  color: #137b76;
+}
+
+.supportCopy h2 {
+  color: #123954;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.supportCopy p {
+  margin-top: 4px;
+  color: #637682;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.supportAction {
+  grid-column: 2;
+  justify-self: start;
+  color: #124f91;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.supportAction:hover {
+  color: #d91832;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 96px 18px 30px;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(100%, 680px);
+    gap: 14px;
+  }
+
+  .brandPanel {
+    min-height: 245px;
+    padding: 23px 25px;
+  }
+
+  .brandCopy {
+    max-width: 540px;
+    padding: 24px 0 20px;
+  }
+
+  .brandCopy h2 {
+    max-width: 510px;
+    margin-top: 9px;
+    font-size: 30px;
+  }
+
+  .brandDescription {
+    margin-top: 9px;
+    font-size: 14px;
+  }
+
+  .formStage {
+    min-height: 0;
+    padding: 30px;
+  }
+
+  .supportPanel {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(100%, 680px);
+    margin-top: 14px;
+  }
+
+  .supportItem + .supportItem {
+    border-top: 1px solid #e5ebeb;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 91px 11px 22px;
+  }
+
+  .brandPanel {
+    min-height: 225px;
+    padding: 19px;
+    border-radius: 6px;
+  }
+
+  .brandLogo {
+    width: 62px;
+    height: 43px;
+  }
+
+  .brandWordmark strong {
+    font-size: 19px;
+  }
+
+  .brandCopy {
+    padding: 20px 0 16px;
+  }
+
+  .brandEyebrow,
+  .pageEyebrow {
+    font-size: 10px;
+  }
+
+  .brandCopy h2 {
+    max-width: 390px;
+    font-size: 27px;
+  }
+
+  .brandDescription {
+    max-width: 340px;
+    font-size: 13px;
+  }
+
+  .brandFooter {
+    gap: 6px;
+    font-size: 8px;
+  }
+
+  .brandFooter svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .brandFooterRule {
+    width: 12px;
+  }
+
+  .formStage {
+    padding: 24px 19px;
+    border-radius: 6px;
+  }
+
+  .pageHeader {
+    margin-bottom: 24px;
+  }
+
+  .pageHeader h1 {
+    font-size: 27px;
+  }
+
+  .pageHeader > p:last-child {
+    font-size: 14px;
+  }
+
+  .formHeading h2 {
+    font-size: 21px;
+  }
+
+  .formHeading.modalHeading h2 {
+    font-size: 18px;
+  }
+
+  .formHeading p {
+    font-size: 14px;
+  }
+
+  .form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .signupForm .field:last-of-type,
+  .submitButton {
+    grid-column: auto;
+  }
+
+  .field {
+    font-size: 14px;
+  }
+
+  .field input {
+    height: 52px;
+    font-size: 16px;
+  }
+
+  .submitButton,
+  .createAccountButton {
+    width: 100%;
+    min-height: 52px;
+  }
+
+  .supportItem {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px 12px;
+    min-height: 104px;
+    padding: 17px;
+  }
+
+  .supportIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .accountWelcome {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .accountWelcome h2 {
+    font-size: 21px;
+    overflow-wrap: anywhere;
+  }
+
+  .profileDetails {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profileRow:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .profileRow:nth-child(n + 2) {
+    border-top: 1px solid #e1e8e8;
+  }
+
+  .accountActions > a,
+  .accountActions > button {
+    width: 100%;
+  }
+
+  .accountNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .accountNavButton,
+  .accountNavActive {
+    min-height: 52px;
+    font-size: 12px;
+  }
+
+  .favoriteGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profileForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profileForm > button,
+  .profileFeedback {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .page {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .brandPanel {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .brandFooter {
+    font-size: 7px;
+  }
+
+  .formStage {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .formHeading.modalHeading h2 {
+    font-size: 15px;
+  }
+
+  .supportItem {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+}
+
+.dashboard {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+.dashboardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 8px 0 25px;
+  border-bottom: 1px solid #dfe6e7;
+}
+
+.dashboardHeader h1 {
+  margin-top: 7px;
+  color: #173c54;
+  font-family: "DM Sans", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.dashboardHeader p:last-child {
+  margin-top: 7px;
+  color: #667985;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dashboardHeader .signOutButton {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 15px;
+  border-color: #cbd6da;
+  border-radius: 5px;
+  color: #355465;
+  font-size: 13px;
+}
+
+.dashboard .accountIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 0;
+  border-bottom: 1px solid #e5ebec;
+}
+
+.identityEmail {
+  color: #667985;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.dashboard .accountNav {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  border-bottom: 1px solid #dfe6e7;
+}
+
+.dashboard .accountNavButton,
+.dashboard .accountNavActive {
+  position: relative;
+  min-height: 54px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #536a78;
+  font-size: 14px;
+}
+
+.dashboard .accountNavButton:hover {
+  background: #eaf0ef;
+}
+
+.dashboard .accountNavActive {
+  background: transparent;
+  color: #135f65;
+}
+
+.dashboard .accountNavActive::after {
+  position: absolute;
+  right: 12px;
+  bottom: -1px;
+  left: 12px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: #16847e;
+  content: "";
+}
+
+.dashboardSection {
+  min-height: 330px;
+  padding: 25px 0 8px;
+}
+
+.dashboardSection > div > section {
+  width: 100%;
+}
+
+.dashboard .sectionHeading {
+  margin-bottom: 20px;
+}
+
+.dashboard .sectionHeading h2 {
+  color: #173c54;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.dashboard .sectionHeading p {
+  margin-top: 6px;
+  color: #667985;
+  font-size: 14px;
+}
+
+.dashboard .profileForm {
+  max-width: 760px;
+  gap: 18px 22px;
+}
+
+.dashboard .profileForm .field {
+  font-size: 14px;
+}
+
+.dashboard .profileForm .field input {
+  height: 50px;
+  background: #fff;
+}
+
+.dashboard .profileForm .field input:read-only {
+  background: #edf1f2;
+}
+
+.dashboard .profileForm > button {
+  min-height: 46px;
+  font-size: 14px;
+}
+
+.dashboard .notificationPreference {
+  max-width: 720px;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.dashboard .emptyFavorites {
+  justify-items: start;
+  text-align: left;
+}
+
+.dashboard .emptyFavorites .listingsLink {
+  margin-top: 6px;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 96px 16px 30px;
+  }
+
+  .dashboardHeader {
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 19px;
+  }
+
+  .dashboardHeader h1 {
+    font-size: 25px;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboardHeader > div {
+    min-width: 0;
+  }
+
+  .dashboardHeader .signOutButton {
+    min-height: 40px;
+    padding: 0 11px;
+    font-size: 12px;
+  }
+
+  .dashboard .accountNav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 10px;
+  }
+
+  .dashboard .accountNavButton,
+  .dashboard .accountNavActive {
+    justify-content: flex-start;
+    min-height: 50px;
+    padding: 9px 5px;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .dashboard .accountNavActive::after {
+    right: 5px;
+    left: 5px;
+  }
+
+  .dashboardSection {
+    min-height: 250px;
+    padding-top: 20px;
+  }
+
+  .dashboard .favoriteGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard .profileForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard .profileForm > button,
+  .dashboard .profileFeedback {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .dashboardHeader {
+    flex-direction: column;
+  }
+
+  .dashboardHeader .signOutButton {
+    align-self: flex-end;
+  }
+}

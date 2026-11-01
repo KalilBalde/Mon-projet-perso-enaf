@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ListingCard from "../../components/shared/ListingCard";
+import { fetchPublishedListings } from "../../lib/listings/database";
 import { listingRepository } from "../../lib/listings/repository";
 
-export default function ListingsPage() {
-  const listings = listingRepository.findAll();
+export default async function ListingsPage() {
+  const databaseListings = await fetchPublishedListings();
+  const listings = listingRepository.findAll({}, databaseListings);
 
   return (
     <main

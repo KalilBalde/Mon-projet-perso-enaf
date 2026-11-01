@@ -7,13 +7,22 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Info, Menu, Phone, User, Wrench, X } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { LOGO_SRC, NAV_LINKS } from "../../data/constants";
+import { createClient } from "../../lib/supabase/client";
+import AccountModal from "./AccountModal";
 import { useContactModal } from "../contact/ContactModal";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const { openContact } = useContactModal();
+
+  const firstName = currentUser?.user_metadata?.first_names
+    ?.split(/\s+/)[0];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +34,41 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (active) {
+          setCurrentUser(session?.user ?? null);
+          setAuthReady(true);
+        }
+      });
+
+      supabase.auth.getUser().then(({ data }) => {
+        if (active) {
+          setCurrentUser(data.user);
+          setAuthReady(true);
+        }
+      }).catch(() => {
+        if (active) {
+          setCurrentUser(null);
+          setAuthReady(true);
+        }
+      });
+
+      return () => {
+        active = false;
+        subscription.unsubscribe();
+      };
+    } catch {
+      setAuthReady(true);
+    }
   }, []);
 
   const closeMobileMenu = () => {
@@ -103,13 +147,20 @@ export default function Navbar() {
             <span>Nous connaître</span>
           </Link>
 
-          <Link
-            href="#espace-personnel"
-            className="navbar-account-button"
+          <button
+            type="button"
+            className={`navbar-account-button${currentUser ? " navbar-authenticated" : ""}`}
+            aria-haspopup="dialog"
+            aria-controls="account-dialog"
+            aria-expanded={accountOpen}
+            aria-label={currentUser ? "Mon compte, connecté" : "Mon espace"}
+            onClick={() => setAccountOpen(true)}
+            style={{ border: "none", cursor: "pointer", font: "inherit" }}
           >
             <User size={14} />
-            <span>Mon espace</span>
-          </Link>
+            <span>{currentUser ? firstName || "Mon compte" : "Mon espace"}</span>
+            {currentUser && <span className="navbar-auth-status">Connecté</span>}
+          </button>
         </div>
 
         <div className="mobile-navbar-actions">
@@ -124,16 +175,24 @@ export default function Navbar() {
             <span>Services</span>
           </Link>
 
-          <Link
-            href="#espace-personnel"
-            className="mobile-quick-link mobile-space-link"
-            aria-label="Ouvrir mon espace personnel"
+          <button
+            type="button"
+            className={`mobile-quick-link mobile-space-link${currentUser ? " mobile-space-authenticated" : ""}`}
+            aria-label={currentUser ? "Ouvrir mon compte, connecté" : "Ouvrir mon espace personnel"}
             title="Mon espace"
-            onClick={closeMobileMenu}
+            aria-haspopup="dialog"
+            aria-controls="account-dialog"
+            aria-expanded={accountOpen}
+            onClick={() => {
+              closeMobileMenu();
+              setAccountOpen(true);
+            }}
+            style={{ border: "none", cursor: "pointer", font: "inherit" }}
           >
             <User size={17} />
-            <span>Mon espace</span>
-          </Link>
+            <span>{currentUser ? "Compte" : "Mon espace"}</span>
+            {currentUser && <span className="mobile-auth-dot" aria-label="Connecté" />}
+          </button>
 
           <button
             type="button"
@@ -200,6 +259,13 @@ export default function Navbar() {
           </button>
         </div>
       )}
+
+      <AccountModal
+        isOpen={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        user={currentUser}
+        authReady={authReady}
+      />
     </nav>
   );
 }

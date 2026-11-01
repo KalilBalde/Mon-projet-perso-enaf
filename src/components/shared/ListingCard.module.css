@@ -1,0 +1,6 @@
+@media (max-width: 760px) {
+  .compact .typeTag,
+  .compact .extraChip {
+    display: none;
+  }
+}
