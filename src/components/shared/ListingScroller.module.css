@@ -1,7 +1,5 @@
 .scroller {
   --compact-image-height: 132px;
-  --card-tag-right: 52px;
-  --card-tag-max: 38%;
   position: relative;
 }
 
@@ -82,11 +80,15 @@
     --card-status-padding: 3px 6px;
     --card-price-size: 12px;
     --card-price-padding: 3px 7px;
-    --card-body-padding: 9px 10px 10px;
-    --card-title-size: 13px;
-    --card-meta-size: 11px;
-    --card-meta-gap: 4px;
-    --card-chips-pad-top: 8px;
+    --card-body-padding: 7px 8px 7px;
+    --card-title-size: 12px;
+    --card-type-size: 9px;
+    --card-meta-size: 10px;
+    --card-meta-gap: 3px;
+    --card-chips-margin-top: 5px;
+    --card-chips-pad-top: 5px;
+    --card-feature-size: 9px;
+    --card-feature-padding: 4px 5px;
   }
 
   .track {

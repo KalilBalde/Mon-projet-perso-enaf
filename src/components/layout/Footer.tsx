@@ -178,10 +178,13 @@ export default function Footer() {
           }
 
           .compact-footer-nav {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            justify-content: start;
-            gap: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            gap: 6px;
+            width: 100%;
+            min-width: 0;
             padding-top: 5px;
             border-top: 1px solid rgba(255,255,255,0.1);
           }

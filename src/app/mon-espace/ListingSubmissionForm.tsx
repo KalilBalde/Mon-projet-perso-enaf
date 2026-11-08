@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { CheckCircle2, X } from "lucide-react";
-import { PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
+import { LISTING_AMENITIES, PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
 import {
   submitListing,
   uploadListingImage,
@@ -10,6 +10,7 @@ import {
 } from "../../lib/listings/database";
 import type { UserRole } from "../../lib/auth/permissions";
 import { createClient } from "../../lib/supabase/client";
+import type { ListingOfferType } from "../../types";
 import styles from "./dashboard.module.css";
 
 type SubmissionFeedback = {
@@ -25,9 +26,12 @@ const initialDraft: ListingDraft = {
   title: "",
   quartier: "",
   price: 0,
+  offerType: null,
+  cardBadge: "new",
   surface: 0,
-  rooms: 0,
-  bathrooms: 0,
+  bedrooms: 0,
+  livingRooms: 0,
+  showers: 0,
   type: "Appartement",
   image: "",
   description: "",
@@ -48,6 +52,7 @@ export default function ListingSubmissionForm({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedAdditionalImages, setSelectedAdditionalImages] = useState<File[]>([]);
   const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [featuresText, setFeaturesText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<SubmissionFeedback>(null);
@@ -156,11 +161,13 @@ export default function ListingSubmissionForm({
       ...draft,
       image: uploadedImage.url,
       additionalImages: additionalImageUrls,
-      features: featuresText
-        .split(/[\n,]/)
-        .map((feature) => feature.trim())
-        .filter(Boolean)
-        .slice(0, 20),
+      features: [
+        ...selectedAmenities,
+        ...featuresText
+          .split(/[\n,]/)
+          .map((feature) => feature.trim())
+          .filter(Boolean),
+      ].slice(0, 20),
     });
     setIsSubmitting(false);
 
@@ -178,6 +185,7 @@ export default function ListingSubmissionForm({
     setDraft(initialDraft);
     setSelectedImage(null);
     setSelectedAdditionalImages([]);
+    setSelectedAmenities([]);
     setFeaturesText("");
     setFeedback({
       ok: true,
@@ -195,7 +203,7 @@ export default function ListingSubmissionForm({
         <span className={styles.sectionEyebrow}>Nouvelle annonce</span>
         <h2>Présenter un bien</h2>
         <p>
-          {role === "landlord"
+          {role === "real_estate_agent"
             ? "Votre annonce sera vérifiée par ENAFIM avant sa publication."
             : "Les annonces créées par l’administration sont publiées immédiatement."}
         </p>
@@ -227,17 +235,34 @@ export default function ListingSubmissionForm({
         </label>
 
         <label className={styles.field}>
-          <span>Quartier</span>
+          <span>Type de l’offre</span>
           <select
+            onChange={(event) => updateDraft(
+              "offerType",
+              event.target.value ? event.target.value as ListingOfferType : null,
+            )}
+            value={draft.offerType ?? ""}
+          >
+            <option value="">Non précisé</option>
+            <option value="rent">À louer</option>
+            <option value="sale">À vendre</option>
+          </select>
+        </label>
+
+        <label className={styles.field}>
+          <span>Quartier</span>
+          <input
+            list="listing-submission-neighborhoods"
             onChange={(event) => updateDraft("quartier", event.target.value)}
+            placeholder="Saisir ou choisir un quartier"
             required
             value={draft.quartier}
-          >
-            <option value="" disabled>Choisir un quartier</option>
+          />
+          <datalist id="listing-submission-neighborhoods">
             {QUARTIERS.filter((quartier) => quartier !== "Tous les quartiers").map((quartier) => (
-              <option key={quartier} value={quartier}>{quartier}</option>
+              <option key={quartier} value={quartier} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <label className={styles.field}>
@@ -266,23 +291,33 @@ export default function ListingSubmissionForm({
         {draft.type !== "Terrain-Vide" && (
           <>
             <label className={styles.field}>
-              <span>Nombre de pièces</span>
+                <span>Nombre de chambres</span>
               <input
                 min="0"
-                onChange={(event) => updateDraft("rooms", Number(event.target.value))}
+                onChange={(event) => updateDraft("bedrooms", Number(event.target.value))}
                 required
                 type="number"
-                value={draft.rooms}
+                value={draft.bedrooms}
               />
             </label>
             <label className={styles.field}>
-              <span>Salles de bain</span>
+                <span>Nombre de salons</span>
               <input
                 min="0"
-                onChange={(event) => updateDraft("bathrooms", Number(event.target.value))}
+                onChange={(event) => updateDraft("livingRooms", Number(event.target.value))}
                 required
                 type="number"
-                value={draft.bathrooms}
+                value={draft.livingRooms}
+              />
+            </label>
+            <label className={styles.field}>
+              <span>Nombre de douches</span>
+              <input
+                min="0"
+                onChange={(event) => updateDraft("showers", Number(event.target.value))}
+                required
+                type="number"
+                value={draft.showers}
               />
             </label>
           </>
@@ -353,15 +388,34 @@ export default function ListingSubmissionForm({
           />
         </label>
 
-        <label className={styles.field}>
-          <span>Atouts (séparés par une virgule)</span>
-          <input
-            maxLength={500}
-            onChange={(event) => setFeaturesText(event.target.value)}
-            placeholder="Parking, gardiennage, balcon"
-            value={featuresText}
-          />
-        </label>
+        <fieldset className={styles.amenitiesFieldset}>
+          <legend>Commodités</legend>
+          <div className={styles.amenitiesOptions}>
+            {LISTING_AMENITIES.map((amenity) => (
+              <label className={styles.amenityOption} key={amenity}>
+                <input
+                  checked={selectedAmenities.includes(amenity)}
+                  onChange={() => setSelectedAmenities((current) =>
+                    current.includes(amenity)
+                      ? current.filter((item) => item !== amenity)
+                      : [...current, amenity],
+                  )}
+                  type="checkbox"
+                />
+                <span>{amenity}</span>
+              </label>
+            ))}
+          </div>
+          <label className={`${styles.field} ${styles.amenitiesOtherField}`}>
+            <span>Préciser d’autres commodités</span>
+            <input
+              maxLength={500}
+              onChange={(event) => setFeaturesText(event.target.value)}
+              value={featuresText}
+            />
+            <span className={styles.amenitiesExample}>Exemple : étage 2, balcon</span>
+          </label>
+        </fieldset>
 
         {feedback && (
           <p
@@ -380,7 +434,7 @@ export default function ListingSubmissionForm({
         >
           {isSubmitting
             ? "Enregistrement..."
-            : role === "landlord"
+            : role === "real_estate_agent"
               ? "Envoyer pour validation"
               : "Publier l’annonce"}
         </button>

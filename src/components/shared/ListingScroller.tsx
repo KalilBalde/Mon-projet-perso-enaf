@@ -70,13 +70,35 @@ export default function ListingScroller({
       <div
         ref={trackRef}
         className={styles.track}
+        style={{
+          display: "flex",
+          flexWrap: "nowrap",
+          gap: "clamp(10px, 1.5vw, 20px)",
+          width: "100%",
+          overflowX: "auto",
+          overflowY: "hidden",
+          scrollSnapType: "x mandatory",
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
         role="list"
         aria-label={label}
         tabIndex={0}
         onScroll={updateArrows}
       >
         {listings.map((listing) => (
-          <div key={listing.id} role="listitem" className={styles.item}>
+          <div
+            key={listing.id}
+            role="listitem"
+            className={styles.item}
+            style={{
+              display: "flex",
+              flex: "0 0 min(38vw, 262px)",
+              width: "min(38vw, 262px)",
+              minWidth: 0,
+              scrollSnapAlign: "start",
+            }}
+          >
             <ListingCard listing={listing} compact />
           </div>
         ))}

@@ -1,6 +1,6 @@
 export const USER_ROLES = [
   "tenant",
-  "landlord",
+  "real_estate_agent",
   "admin",
   "super_admin",
 ] as const;
@@ -9,7 +9,7 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   tenant: "Locataire",
-  landlord: "Bailleur",
+  real_estate_agent: "Agent immobilier",
   admin: "Administrateur",
   super_admin: "Super-administrateur",
 };
@@ -35,21 +35,21 @@ const tenantPermissions: Permission[] = [
   "manage_email_preferences",
 ];
 
-const landlordPermissions: Permission[] = [
+const realEstateAgentPermissions: Permission[] = [
   ...tenantPermissions,
   "create_listings",
   "manage_own_listings",
 ];
 
 const adminPermissions: Permission[] = [
-  ...landlordPermissions,
+  ...realEstateAgentPermissions,
   "review_listings",
   "manage_users",
 ];
 
 export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   tenant: tenantPermissions,
-  landlord: landlordPermissions,
+  real_estate_agent: realEstateAgentPermissions,
   admin: adminPermissions,
   super_admin: [...adminPermissions, "manage_roles", "manage_settings"],
 };

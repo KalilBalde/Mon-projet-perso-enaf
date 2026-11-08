@@ -10,14 +10,20 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Eye,
   MapPin,
   Maximize,
+  Sofa,
   X,
 } from "lucide-react";
-import { fetchPublishedListings } from "../../../lib/listings/database";
+import {
+  fetchPublishedListings,
+  incrementListingView,
+} from "../../../lib/listings/database";
 import { listingRepository } from "../../../lib/listings/repository";
+import ListingRecommendations from "../../../components/shared/ListingRecommendations";
 import type { Listing } from "../../../types";
-import { formatPrice } from "../../../utils/format";
+import { formatListingPrice } from "../../../utils/format";
 
 interface ListingDetailsPageProps {
   params: {
@@ -61,6 +67,62 @@ export default function ListingDetailsPage({
     : [];
 
   const isTerrain = listing?.type === "Terrain-Vide";
+
+  useEffect(() => {
+    if (!listing) {
+      return;
+    }
+
+    const storageKey = `enafim-listing-view-${listing.id}`;
+
+    try {
+      if (sessionStorage.getItem(storageKey)) {
+        return;
+      }
+      sessionStorage.setItem(storageKey, "pending");
+    } catch {
+      // Continue counting when session storage is unavailable.
+    }
+
+    let active = true;
+
+    void incrementListingView(listing.id)
+      .then((viewCount) => {
+        if (viewCount === null) {
+          try {
+            sessionStorage.removeItem(storageKey);
+          } catch {
+            // Ignore storage access failures.
+          }
+          return;
+        }
+
+        try {
+          sessionStorage.setItem(storageKey, "counted");
+        } catch {
+          // Ignore storage access failures.
+        }
+
+        if (active) {
+          setDatabaseListings((currentListings) =>
+            currentListings.map((item) =>
+              item.id === listing.id ? { ...item, viewCount } : item,
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        try {
+          sessionStorage.removeItem(storageKey);
+        } catch {
+          // Ignore storage access failures.
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [listing?.id]);
 
   const showPreviousImage = () => {
     if (!images.length) {
@@ -444,7 +506,7 @@ export default function ListingDetailsPage({
                 textTransform: "uppercase",
               }}
             >
-              {listing.type}
+              {listing.type}{listing.offerType === "rent" ? " · À louer" : listing.offerType === "sale" ? " · À vendre" : ""}
             </span>
 
             <h1
@@ -484,18 +546,30 @@ export default function ListingDetailsPage({
                 {listing.surface} m²
               </span>
 
-              {!isTerrain && (
-                <>
-                  <span className="listing-detail-badge">
-                    <BedDouble size={16} color="#1a6dd4" />
-                    {listing.rooms} pièces
-                  </span>
+              <span className="listing-detail-badge">
+                <Eye size={16} color="#1a6dd4" />
+                {listing.viewCount ?? 0} vues
+              </span>
 
-                  <span className="listing-detail-badge">
-                    <Bath size={16} color="#1a6dd4" />
-                    {listing.bathrooms} salle(s) de bain
-                  </span>
-                </>
+              {!isTerrain && listing.bedrooms > 0 && (
+                <span className="listing-detail-badge">
+                  <BedDouble size={16} color="#1a6dd4" />
+                  {listing.bedrooms} chambre(s)
+                </span>
+              )}
+
+              {!isTerrain && listing.livingRooms > 0 && (
+                <span className="listing-detail-badge">
+                  <Sofa size={16} color="#1a6dd4" />
+                  {listing.livingRooms} salon(s)
+                </span>
+              )}
+
+              {!isTerrain && listing.showers > 0 && (
+                <span className="listing-detail-badge">
+                  <Bath size={16} color="#1a6dd4" />
+                  {listing.showers} douche(s)
+                </span>
               )}
             </div>
 
@@ -509,7 +583,7 @@ export default function ListingDetailsPage({
 
             {listing.features && listing.features.length > 0 && (
               <div style={{ marginTop: 40 }}>
-                <h2 style={sectionTitleStyle}>Caractéristiques</h2>
+                <h2 style={sectionTitleStyle}>Commodités</h2>
 
                 <div
                   style={{
@@ -560,7 +634,7 @@ export default function ListingDetailsPage({
                 fontSize: 28,
               }}
             >
-              {formatPrice(listing.price)}
+              {formatListingPrice(listing.price, listing.offerType)}
             </strong>
 
             <a
@@ -582,6 +656,12 @@ export default function ListingDetailsPage({
           </aside>
         </div>
       </div>
+
+      <ListingRecommendations
+        currentListing={listing}
+        listings={databaseListings}
+        title="Annonces similaires"
+      />
 
       {isGalleryOpen && (
         <div

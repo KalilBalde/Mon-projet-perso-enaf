@@ -7,6 +7,7 @@ import ListingCard from "./ListingCard";
 
 interface ListingsCarouselProps {
   listings: Listing[];
+  isFiltered?: boolean;
 }
 
 interface ListingColumn {
@@ -17,44 +18,28 @@ interface ListingColumn {
 const DESKTOP_VISIBLE_COLUMNS = 4;
 const DESKTOP_CARDS_PER_COLUMN = 2;
 
-function getCircularListing(
-  listings: Listing[],
-  index: number,
-): Listing {
-  const length = listings.length;
-  const safeIndex = ((index % length) + length) % length;
-
+function getCircularListing(listings: Listing[], index: number): Listing {
+  const safeIndex = ((index % listings.length) + listings.length) % listings.length;
   return listings[safeIndex];
 }
 
-function getVisibleColumns(
-  listings: Listing[],
-  startCardIndex: number,
-): ListingColumn[] {
-  const columns: ListingColumn[] = [];
+function getVisibleColumns(listings: Listing[], startCardIndex: number): ListingColumn[] {
+  return Array.from({ length: DESKTOP_VISIBLE_COLUMNS + 1 }, (_, columnIndex) => {
+    const topIndex = startCardIndex + columnIndex * DESKTOP_CARDS_PER_COLUMN;
 
-  for (
-    let column = 0;
-    column < DESKTOP_VISIBLE_COLUMNS + 1;
-    column += 1
-  ) {
-    const topIndex =
-      startCardIndex + column * DESKTOP_CARDS_PER_COLUMN;
-
-    columns.push({
+    return {
       top: getCircularListing(listings, topIndex),
       bottom: getCircularListing(listings, topIndex + 1),
-    });
-  }
-
-  return columns;
+    };
+  });
 }
 
 export default function ListingsCarousel({
   listings,
+  isFiltered = false,
 }: ListingsCarouselProps) {
-  const [desktopCardIndex, setDesktopCardIndex] = useState(0);
   const mobileViewRef = useRef<HTMLDivElement>(null);
+  const [desktopCardIndex, setDesktopCardIndex] = useState(0);
 
   if (listings.length === 0) {
     return (
@@ -75,12 +60,12 @@ export default function ListingsCarousel({
     );
   }
 
-  const visibleColumns = getVisibleColumns(
-    listings,
-    desktopCardIndex,
-  );
+  const showDesktopCarousel = !isFiltered;
+  const visibleColumns = showDesktopCarousel
+    ? getVisibleColumns(listings, desktopCardIndex)
+    : [];
 
-    const scrollMobile = (direction: "previous" | "next") => {
+  const scrollMobile = (direction: "previous" | "next") => {
     const view = mobileViewRef.current;
 
     if (!view) {
@@ -109,27 +94,23 @@ export default function ListingsCarousel({
   const moveNext = () => {
     setDesktopCardIndex(
       (currentIndex) =>
-        (currentIndex + DESKTOP_CARDS_PER_COLUMN) %
-        listings.length,
+        (currentIndex + DESKTOP_CARDS_PER_COLUMN) % listings.length,
     );
-
     scrollMobile("next");
   };
 
   const movePrevious = () => {
     setDesktopCardIndex(
       (currentIndex) =>
-        (currentIndex -
-          DESKTOP_CARDS_PER_COLUMN +
-          listings.length) %
-        listings.length,
+        (currentIndex - DESKTOP_CARDS_PER_COLUMN + listings.length) % listings.length,
     );
-
     scrollMobile("previous");
   };
 
   return (
-    <div className="listings-carousel">
+    <div
+      className={`listings-carousel${isFiltered ? " listings-carousel-filtered" : ""}`}
+    >
       <style suppressHydrationWarning>{`
         .listings-carousel {
           position: relative;
@@ -144,17 +125,22 @@ export default function ListingsCarousel({
           overflow: hidden;
         }
 
+        .desktop-listings-view-filtered {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          overflow: visible;
+        }
+
         .desktop-listing-column {
           display: grid;
-          grid-template-rows: repeat(2, minmax(0, 1fr));
+          grid-template-rows: repeat(2, auto);
           gap: 18px;
           min-width: 0;
         }
 
         .desktop-listing-slot {
           display: flex;
+          align-items: flex-start;
           min-width: 0;
-          min-height: 0;
         }
 
         .desktop-listing-slot > article {
@@ -203,13 +189,23 @@ export default function ListingsCarousel({
           right: -14px;
         }
 
+        @media (min-width: 901px) {
+          .listings-carousel-filtered .listings-carousel-button {
+            display: none;
+          }
+        }
+
         @media (max-width: 1100px) and (min-width: 769px) {
           .desktop-listings-view {
             grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.10fr);
           }
+
+          .desktop-listings-view-filtered {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .desktop-listings-view {
             display: none;
           }
@@ -238,44 +234,47 @@ export default function ListingsCarousel({
           }
 
           .listings-carousel-button {
+            top: 32%;
             width: 34px;
             height: 34px;
           }
 
           .listings-carousel-button-left {
-            left: 0;
+            left: -16px;
           }
 
           .listings-carousel-button-right {
-            right: 0;
+            right: -16px;
           }
         }
       `}</style>
 
-      <div className="desktop-listings-view">
-        {visibleColumns.map((column, columnIndex) => {
-          const isPreview =
-            columnIndex === DESKTOP_VISIBLE_COLUMNS;
-
-          return (
-            <div
-              key={`${column.top.id}-${column.bottom.id}-${columnIndex}`}
-              className={`desktop-listing-column ${
-                isPreview
-                  ? "desktop-listing-column-preview"
-                  : ""
-              }`}
-            >
-              <div className="desktop-listing-slot">
-                <ListingCard listing={column.top} />
+      <div
+        className={`desktop-listings-view${isFiltered ? " desktop-listings-view-filtered" : ""}`}
+        style={isFiltered && listings.length <= 4 ? {
+          gridTemplateColumns: `repeat(${listings.length}, minmax(0, 1fr))`,
+          maxWidth: `min(100%, ${listings.length * 320}px)`,
+        } : undefined}
+      >
+        {showDesktopCarousel
+          ? visibleColumns.map((column, columnIndex) => (
+              <div
+                key={`${column.top.id}-${column.bottom.id}-${columnIndex}`}
+                className={`desktop-listing-column${columnIndex === DESKTOP_VISIBLE_COLUMNS ? " desktop-listing-column-preview" : ""}`}
+              >
+                <div className="desktop-listing-slot">
+                  <ListingCard listing={column.top} />
+                </div>
+                <div className="desktop-listing-slot">
+                  <ListingCard listing={column.bottom} />
+                </div>
               </div>
-
-              <div className="desktop-listing-slot">
-                <ListingCard listing={column.bottom} />
+            ))
+          : listings.map((listing) => (
+              <div className="desktop-listing-slot" key={listing.id}>
+                <ListingCard listing={listing} />
               </div>
-            </div>
-          );
-        })}
+            ))}
       </div>
 
       <div className="mobile-listings-view" ref={mobileViewRef}>
@@ -296,7 +295,6 @@ export default function ListingsCarousel({
           >
             <ChevronLeft size={20} />
           </button>
-
           <button
             type="button"
             className="listings-carousel-button listings-carousel-button-right"

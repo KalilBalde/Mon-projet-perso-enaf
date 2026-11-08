@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Pencil, Save, Trash2, X } from "lucide-react";
-import { PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
+import { LISTING_AMENITIES, PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
 import {
   deleteListing,
   listManageableListings,
@@ -12,7 +12,8 @@ import {
   type ListingSubmission,
 } from "../../lib/listings/database";
 import { createClient } from "../../lib/supabase/client";
-import { formatPrice } from "../../utils/format";
+import { formatListingPrice } from "../../utils/format";
+import type { ListingCardBadge } from "../../types";
 import styles from "./dashboard.module.css";
 
 type Feedback = { ok: boolean; message: string } | null;
@@ -22,9 +23,12 @@ function createDraft(listing: ListingSubmission): ListingDraft {
     title: listing.title,
     quartier: listing.quartier,
     price: listing.price,
+    offerType: listing.offerType ?? null,
+    cardBadge: listing.cardBadge ?? null,
     surface: listing.surface,
-    rooms: listing.rooms,
-    bathrooms: listing.bathrooms,
+    bedrooms: listing.bedrooms,
+    livingRooms: listing.livingRooms,
+    showers: listing.showers,
     type: listing.type,
     priority: listing.priority ?? 0,
     image: listing.image,
@@ -39,6 +43,7 @@ export default function ListingManagement({ userId }: { userId: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [editingListing, setEditingListing] = useState<ListingSubmission | null>(null);
   const [draft, setDraft] = useState<ListingDraft | null>(null);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [featuresText, setFeaturesText] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [busyListingId, setBusyListingId] = useState<number | null>(null);
@@ -67,7 +72,16 @@ export default function ListingManagement({ userId }: { userId: string }) {
   const beginEdit = (listing: ListingSubmission) => {
     setEditingListing(listing);
     setDraft(createDraft(listing));
-    setFeaturesText((listing.features ?? []).join(", "));
+    setSelectedAmenities(
+      (listing.features ?? []).filter((feature) =>
+        LISTING_AMENITIES.includes(feature as (typeof LISTING_AMENITIES)[number]),
+      ),
+    );
+    setFeaturesText(
+      (listing.features ?? [])
+        .filter((feature) => !LISTING_AMENITIES.includes(feature as (typeof LISTING_AMENITIES)[number]))
+        .join(", "),
+    );
     setSelectedImage(null);
     setFeedback(null);
   };
@@ -75,6 +89,7 @@ export default function ListingManagement({ userId }: { userId: string }) {
   const cancelEdit = () => {
     setEditingListing(null);
     setDraft(null);
+    setSelectedAmenities([]);
     setFeaturesText("");
     setSelectedImage(null);
   };
@@ -104,11 +119,13 @@ export default function ListingManagement({ userId }: { userId: string }) {
     const result = await updateListing(supabase, editingListing.id, {
       ...draft,
       image,
-      features: featuresText
-        .split(/[\n,]/)
-        .map((feature) => feature.trim())
-        .filter(Boolean)
-        .slice(0, 20),
+      features: [
+        ...selectedAmenities,
+        ...featuresText
+          .split(/[\n,]/)
+          .map((feature) => feature.trim())
+          .filter(Boolean),
+      ].slice(0, 20),
     });
 
     setBusyListingId(null);
@@ -199,7 +216,7 @@ export default function ListingManagement({ userId }: { userId: string }) {
                   </span>
                   <h3>{listing.title}</h3>
                   <p>{listing.type} · {listing.quartier}, Conakry</p>
-                  <p>{formatPrice(listing.price)} · {listing.surface} m²</p>
+                  <p>{formatListingPrice(listing.price, listing.offerType)} · {listing.surface} m²</p>
                 </div>
                 <div className={styles.managedListingActions}>
                   <button
@@ -236,12 +253,53 @@ export default function ListingManagement({ userId }: { userId: string }) {
                     </select>
                   </label>
                   <label className={styles.field}>
-                    <span>Quartier</span>
-                    <select required value={draft.quartier} onChange={(event) => updateDraft("quartier", event.target.value)}>
-                      {QUARTIERS.filter((quartier) => quartier !== "Tous les quartiers").map((quartier) => (
-                        <option key={quartier} value={quartier}>{quartier}</option>
-                      ))}
+                    <span>Type de l’offre</span>
+                    <select
+                      value={draft.offerType ?? ""}
+                      onChange={(event) => updateDraft(
+                        "offerType",
+                        event.target.value === "rent" || event.target.value === "sale"
+                          ? event.target.value
+                          : null,
+                      )}
+                    >
+                      <option value="">Non précisé</option>
+                      <option value="rent">À louer</option>
+                      <option value="sale">À vendre</option>
                     </select>
+                  </label>
+                  <label className={styles.field}>
+                    <span>Badge sur la carte</span>
+                    <select
+                      value={draft.cardBadge ?? "none"}
+                      onChange={(event) => updateDraft(
+                        "cardBadge",
+                        event.target.value === "new" || event.target.value === "rented" || event.target.value === "sold" || event.target.value === "title_deed"
+                          ? event.target.value as ListingCardBadge
+                          : null,
+                      )}
+                    >
+                      <option value="new">Nouveau</option>
+                      <option value="title_deed">Titre foncier</option>
+                      <option value="rented">Déjà loué</option>
+                      <option value="sold">Vendu</option>
+                      <option value="none">Rien</option>
+                    </select>
+                  </label>
+                  <label className={styles.field}>
+                    <span>Quartier</span>
+                    <input
+                      list="listing-management-neighborhoods"
+                      required
+                      value={draft.quartier}
+                      placeholder="Saisir ou choisir un quartier"
+                      onChange={(event) => updateDraft("quartier", event.target.value)}
+                    />
+                    <datalist id="listing-management-neighborhoods">
+                      {QUARTIERS.filter((quartier) => quartier !== "Tous les quartiers").map((quartier) => (
+                        <option key={quartier} value={quartier} />
+                      ))}
+                    </datalist>
                   </label>
                   <label className={styles.field}>
                     <span>Prix (GNF)</span>
@@ -259,12 +317,16 @@ export default function ListingManagement({ userId }: { userId: string }) {
                   {draft.type !== "Terrain-Vide" && (
                     <>
                       <label className={styles.field}>
-                        <span>Nombre de pièces</span>
-                        <input min="0" required type="number" value={draft.rooms} onChange={(event) => updateDraft("rooms", Number(event.target.value))} />
+                        <span>Nombre de chambres</span>
+                        <input min="0" required type="number" value={draft.bedrooms} onChange={(event) => updateDraft("bedrooms", Number(event.target.value))} />
                       </label>
                       <label className={styles.field}>
-                        <span>Salles de bain</span>
-                        <input min="0" required type="number" value={draft.bathrooms} onChange={(event) => updateDraft("bathrooms", Number(event.target.value))} />
+                        <span>Nombre de salons</span>
+                        <input min="0" required type="number" value={draft.livingRooms} onChange={(event) => updateDraft("livingRooms", Number(event.target.value))} />
+                      </label>
+                      <label className={styles.field}>
+                        <span>Nombre de douches</span>
+                        <input min="0" required type="number" value={draft.showers} onChange={(event) => updateDraft("showers", Number(event.target.value))} />
                       </label>
                     </>
                   )}
@@ -276,10 +338,30 @@ export default function ListingManagement({ userId }: { userId: string }) {
                     <span>Description</span>
                     <textarea maxLength={5000} rows={4} value={draft.description} onChange={(event) => updateDraft("description", event.target.value)} />
                   </label>
-                  <label className={styles.field}>
-                    <span>Atouts (séparés par une virgule)</span>
-                    <input maxLength={500} value={featuresText} onChange={(event) => setFeaturesText(event.target.value)} />
-                  </label>
+                  <fieldset className={styles.amenitiesFieldset}>
+                    <legend>Commodités</legend>
+                    <div className={styles.amenitiesOptions}>
+                      {LISTING_AMENITIES.map((amenity) => (
+                        <label className={styles.amenityOption} key={amenity}>
+                          <input
+                            checked={selectedAmenities.includes(amenity)}
+                            onChange={() => setSelectedAmenities((current) =>
+                              current.includes(amenity)
+                                ? current.filter((item) => item !== amenity)
+                                : [...current, amenity],
+                            )}
+                            type="checkbox"
+                          />
+                          <span>{amenity}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <label className={`${styles.field} ${styles.amenitiesOtherField}`}>
+                      <span>Préciser d’autres commodités</span>
+                      <input maxLength={500} value={featuresText} onChange={(event) => setFeaturesText(event.target.value)} />
+                      <span className={styles.amenitiesExample}>Exemple : étage 2, balcon</span>
+                    </label>
+                  </fieldset>
                   <div className={styles.listingManagerActions}>
                     <button className={styles.primaryAction} type="submit" disabled={busyListingId !== null}>
                       <Save size={16} aria-hidden="true" /> Enregistrer

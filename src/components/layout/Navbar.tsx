@@ -8,10 +8,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Info, Menu, Phone, User, Wrench, X } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { LOGO_SRC, NAV_LINKS } from "../../data/constants";
+import {
+  LOGO_SRC,
+  NAV_LINKS,
+  RESET_LISTING_FILTERS_EVENT,
+} from "../../data/constants";
 import { createClient } from "../../lib/supabase/client";
 import AccountModal from "./AccountModal";
 import { useContactModal } from "../contact/ContactModal";
+
+const MOBILE_NAV_LINKS = [
+  ...NAV_LINKS.filter((link) => link.href === "/multiservices"),
+  { label: "Accueil", href: "/" },
+  ...NAV_LINKS.filter((link) => link.href !== "/multiservices"),
+];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -97,7 +107,12 @@ export default function Navbar() {
           href="/"
           className="navbar-brand"
           aria-label="Retour à l'accueil ENAFIM Guinée"
-          onClick={closeMobileMenu}
+          onClick={() => {
+            closeMobileMenu();
+            if (window.location.pathname === "/") {
+              window.dispatchEvent(new Event(RESET_LISTING_FILTERS_EVENT));
+            }
+          }}
         >
           <img
             src={LOGO_SRC}
@@ -190,7 +205,7 @@ export default function Navbar() {
             style={{ border: "none", cursor: "pointer", font: "inherit" }}
           >
             <User size={17} />
-            <span>{currentUser ? "Compte" : "Mon espace"}</span>
+            <span>{currentUser ? firstName || "Mon compte" : "Mon espace"}</span>
             {currentUser && <span className="mobile-auth-dot" aria-label="Connecté" />}
           </button>
 
@@ -214,19 +229,11 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div className="mobile-menu-panel">
-          <Link
-            href="/"
-            className="mobile-menu-link mobile-menu-home"
-            onClick={closeMobileMenu}
-          >
-            Accueil
-          </Link>
-
-          {NAV_LINKS.map((link) => (
+          {MOBILE_NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className="mobile-menu-link"
+              className={`mobile-menu-link${link.href === "/" ? " mobile-menu-home" : ""}`}
               onClick={closeMobileMenu}
             >
               {link.label}

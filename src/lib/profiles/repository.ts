@@ -7,11 +7,11 @@ export type Profile = {
   phone: string;
   email_notifications: boolean;
   role: UserRole;
-  requested_role: "tenant" | "landlord";
+  requested_role: "tenant" | "real_estate_agent";
   role_request_status: "none" | "pending" | "approved" | "rejected";
 };
 
-export type LandlordRequest = {
+export type AgentRequest = {
   user_id: string;
   email: string | null;
   first_names: string;
@@ -84,26 +84,26 @@ export async function updateEmailNotifications(
   return !error;
 }
 
-export async function listPendingLandlordRequests(
+export async function listPendingAgentRequests(
   supabase: SupabaseClient,
-): Promise<LandlordRequest[]> {
+): Promise<AgentRequest[]> {
   const { data, error } = await supabase.rpc(
-    "list_pending_landlord_requests",
+    "list_pending_agent_requests",
   );
 
   if (error || !data) {
     return [];
   }
 
-  return data as LandlordRequest[];
+  return data as AgentRequest[];
 }
 
-export async function reviewLandlordRequest(
+export async function reviewAgentRequest(
   supabase: SupabaseClient,
   userId: string,
   approve: boolean,
 ): Promise<boolean> {
-  const { error } = await supabase.rpc("review_landlord_request", {
+  const { error } = await supabase.rpc("review_agent_request", {
     target_user_id: userId,
     approve_request: approve,
   });
