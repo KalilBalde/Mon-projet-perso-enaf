@@ -112,7 +112,7 @@ export default function FeaturesSection() {
           }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .features-carousel {
             display: flex;
             gap: 12px;
@@ -128,37 +128,103 @@ export default function FeaturesSection() {
           }
 
           .feature-card {
-            flex: 0 0 78vw;
-            max-width: 320px;
-            padding: 22px 20px;
+            flex: 0 0 calc((100% - 36px) / 2);
+            max-width: none;
+            min-height: 168px;
+            padding: 18px 16px;
             scroll-snap-align: start;
           }
 
           .feature-icon {
-            width: 52px;
-            height: 52px;
-            margin-bottom: 14px;
+            width: 44px;
+            height: 44px;
+            margin-bottom: 10px;
           }
 
           .feature-title {
-            font-size: 19px;
+            font-size: 16px;
           }
 
           .feature-description {
-            font-size: 15px;
-            margin-top: 9px;
+            font-size: 13px;
+            margin-top: 7px;
           }
         }
 
         @media (max-width: 390px) {
           .feature-card {
-            flex-basis: 88vw;
-            width: 88vw;
-            padding: 17px;
+            flex-basis: calc((100% - 36px) / 2);
+            width: auto;
+            padding: 16px;
           }
 
           .feature-title {
-            font-size: 13px;
+            font-size: 14px;
+          }
+        }
+
+        @media (max-width: 900px) and (orientation: portrait) {
+          .feature-card {
+            min-height: 154px;
+            padding: 12px;
+            border-color: #d3e2f1;
+            border-radius: 12px;
+            background: linear-gradient(160deg, #fff 0%, #f5f9fe 100%);
+            box-shadow: 0 7px 18px rgba(10, 46, 92, 0.08);
+          }
+
+          .feature-icon {
+            width: 34px;
+            height: 34px;
+            margin-bottom: 8px;
+            border: 1px solid #c8dcef;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #edf5fd, #dceafa);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          }
+
+          .feature-title,
+          .feature-description {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+
+          .feature-title {
+            font-size: 14px;
+            line-height: 1.25;
+          }
+
+          .feature-description {
+            margin-top: 5px;
+            font-size: 11px;
+            line-height: 1.35;
+          }
+        }
+
+        @media (max-width: 900px) and (orientation: landscape) {
+          .feature-card {
+            flex: 0 0 calc((100% - 48px) / 3);
+            width: auto;
+            max-width: none;
+            min-height: 160px;
+            padding: 16px;
+          }
+
+          .feature-icon {
+            width: 38px;
+            height: 38px;
+            margin-bottom: 9px;
+          }
+
+          .feature-title {
+            font-size: 15px;
+          }
+
+          .feature-description {
+            margin-top: 6px;
+            font-size: 12px;
           }
         }
       `}</style>

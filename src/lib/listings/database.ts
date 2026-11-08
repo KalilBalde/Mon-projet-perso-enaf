@@ -1,15 +1,18 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserRole } from "../auth/permissions";
-import type { Listing } from "../../types";
+import type { Listing, ListingCardBadge, ListingOfferType } from "../../types";
 
 export type ListingDraft = {
   title: string;
   quartier: string;
   price: number;
+  offerType: ListingOfferType | null;
+  cardBadge: ListingCardBadge | null;
   surface: number;
-  rooms: number;
-  bathrooms: number;
+  bedrooms: number;
+  livingRooms: number;
+  showers: number;
   type: string;
   priority?: number;
   image: string;
@@ -28,12 +31,16 @@ interface DatabaseListing {
   title: string;
   quartier: string;
   price: number;
+  offer_type: ListingOfferType | null;
   surface: number;
-  rooms: number;
-  bathrooms: number;
+  bedrooms: number;
+  living_rooms: number;
+  showers: number;
   type: string;
   priority: number;
   status: "sold" | "rented" | null;
+  card_badge?: ListingCardBadge | null;
+  view_count?: number | null;
   image: string;
   images: string[] | null;
   description: string | null;
@@ -43,7 +50,28 @@ interface DatabaseListing {
   created_at: string;
 }
 
+interface LegacyDatabaseListing extends Omit<
+  DatabaseListing,
+  "offer_type" | "bedrooms" | "living_rooms" | "showers"
+> {
+  rooms: number;
+  bathrooms: number;
+}
+
+type ListingReadResponse = {
+  data: unknown[] | null;
+  error: { code: string } | null;
+};
+
+type ListingReadQuery = (columns: string) => PromiseLike<ListingReadResponse>;
+
 const LISTING_COLUMNS =
+  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+const LISTING_COLUMNS_WITHOUT_CARD_BADGE =
+  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+const LISTING_COLUMNS_WITH_VIEW_COUNT = `${LISTING_COLUMNS}, view_count`;
+const LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT = `${LISTING_COLUMNS_WITHOUT_CARD_BADGE}`;
+const LEGACY_LISTING_COLUMNS =
   "id, title, quartier, price, surface, rooms, bathrooms, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 
 const LISTING_IMAGE_BUCKET = "listing-images";
@@ -77,12 +105,16 @@ function toListing(row: DatabaseListing): Listing {
     title: row.title,
     quartier: row.quartier,
     price: Number(row.price),
+    offerType: row.offer_type,
     surface: Number(row.surface),
-    rooms: row.rooms,
-    bathrooms: row.bathrooms,
+    bedrooms: row.bedrooms,
+    livingRooms: row.living_rooms,
+    showers: row.showers,
     type: row.type,
     priority: row.priority,
     status: row.status ?? undefined,
+    cardBadge: row.card_badge ?? null,
+    viewCount: Number(row.view_count ?? 0),
     image: row.image,
     images: row.images ?? undefined,
     description: row.description ?? undefined,
@@ -98,6 +130,79 @@ function toSubmission(row: DatabaseListing): ListingSubmission {
     moderation_status: row.moderation_status,
     created_at: row.created_at,
   };
+}
+
+async function fetchListingRows(
+  query: ListingReadQuery,
+): Promise<DatabaseListing[]> {
+  const isMissingColumnError = (error: { code: string } | null) =>
+    error !== null && ["42703", "PGRST204"].includes(error.code);
+
+  const currentResult = await query(LISTING_COLUMNS_WITH_VIEW_COUNT);
+
+  if (!currentResult.error && currentResult.data) {
+    return currentResult.data as DatabaseListing[];
+  }
+
+  if (!isMissingColumnError(currentResult.error)) {
+    return [];
+  }
+
+  const currentSchemaResult = await query(LISTING_COLUMNS);
+
+  if (!currentSchemaResult.error && currentSchemaResult.data) {
+    return (currentSchemaResult.data as unknown as DatabaseListing[]).map((row) => ({
+      ...row,
+      view_count: 0,
+    }));
+  }
+
+  if (!isMissingColumnError(currentSchemaResult.error)) {
+    return [];
+  }
+
+  const schemaWithoutBadge = await query(LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT);
+
+  if (!schemaWithoutBadge.error && schemaWithoutBadge.data) {
+    return (schemaWithoutBadge.data as unknown as DatabaseListing[]).map((row) => ({
+      ...row,
+      card_badge: row.status === "sold"
+        ? "sold"
+        : row.status === "rented"
+          ? "rented"
+          : row.is_new
+            ? "new"
+            : null,
+      view_count: 0,
+    }));
+  }
+
+  if (!isMissingColumnError(schemaWithoutBadge.error)) {
+    return [];
+  }
+
+  const legacyResult = await query(LEGACY_LISTING_COLUMNS);
+
+  if (legacyResult.error || !legacyResult.data) {
+    return [];
+  }
+
+  return (legacyResult.data as unknown as LegacyDatabaseListing[]).map((row) => ({
+    ...row,
+    offer_type:
+      row.status === "rented" ? "rent" : row.status === "sold" ? "sale" : null,
+    bedrooms: row.rooms,
+    living_rooms: 0,
+    showers: row.bathrooms,
+    card_badge: row.status === "sold"
+      ? "sold"
+      : row.status === "rented"
+        ? "rented"
+        : row.is_new
+          ? "new"
+          : null,
+    view_count: 0,
+  }));
 }
 
 export async function uploadListingImage(
@@ -142,17 +247,34 @@ export async function fetchPublishedListings(): Promise<Listing[]> {
     return [];
   }
 
-  const { data, error } = await supabase
-    .from("listings")
-    .select(LISTING_COLUMNS)
-    .eq("moderation_status", "published")
-    .order("created_at", { ascending: false });
+  const rows = await fetchListingRows((columns) =>
+    supabase
+      .from("listings")
+      .select(columns)
+      .eq("moderation_status", "published")
+      .order("created_at", { ascending: false }),
+  );
 
-  if (error || !data) {
-    return [];
+  return rows.map(toListing);
+}
+
+export async function incrementListingView(listingId: number): Promise<number | null> {
+  const supabase = createPublicClient();
+
+  if (!supabase) {
+    return null;
   }
 
-  return (data as unknown as DatabaseListing[]).map(toListing);
+  const { data, error } = await supabase.rpc("increment_listing_view", {
+    target_listing_id: listingId,
+  });
+
+  if (error || data === null || data === undefined) {
+    return null;
+  }
+
+  const viewCount = Number(data);
+  return Number.isFinite(viewCount) ? viewCount : null;
 }
 
 export async function submitListing(
@@ -161,7 +283,7 @@ export async function submitListing(
   role: UserRole,
   draft: ListingDraft,
 ): Promise<{ listing: ListingSubmission | null; error: string | null }> {
-  const moderationStatus = role === "landlord" ? "pending" : "published";
+  const moderationStatus = role === "real_estate_agent" ? "pending" : "published";
   const image = draft.image.trim();
   const { data, error } = await supabase
     .from("listings")
@@ -170,9 +292,12 @@ export async function submitListing(
       title: draft.title.trim(),
       quartier: draft.quartier,
       price: draft.price,
+      offer_type: draft.offerType,
+      card_badge: draft.cardBadge,
       surface: draft.surface,
-      rooms: draft.rooms,
-      bathrooms: draft.bathrooms,
+      bedrooms: draft.bedrooms,
+      living_rooms: draft.livingRooms,
+      showers: draft.showers,
       type: draft.type,
       is_new: true,
       status: null,
@@ -200,48 +325,42 @@ export async function listMyListings(
   supabase: SupabaseClient,
   ownerId: string,
 ): Promise<ListingSubmission[]> {
-  const { data, error } = await supabase
-    .from("listings")
-    .select(LISTING_COLUMNS)
-    .eq("owner_id", ownerId)
-    .order("created_at", { ascending: false });
+  const rows = await fetchListingRows((columns) =>
+    supabase
+      .from("listings")
+      .select(columns)
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false }),
+  );
 
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as unknown as DatabaseListing[]).map(toSubmission);
+  return rows.map(toSubmission);
 }
 
 export async function listPendingListings(
   supabase: SupabaseClient,
 ): Promise<ListingSubmission[]> {
-  const { data, error } = await supabase
-    .from("listings")
-    .select(LISTING_COLUMNS)
-    .eq("moderation_status", "pending")
-    .order("created_at", { ascending: true });
+  const rows = await fetchListingRows((columns) =>
+    supabase
+      .from("listings")
+      .select(columns)
+      .eq("moderation_status", "pending")
+      .order("created_at", { ascending: true }),
+  );
 
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as unknown as DatabaseListing[]).map(toSubmission);
+  return rows.map(toSubmission);
 }
 
 export async function listManageableListings(
   supabase: SupabaseClient,
 ): Promise<ListingSubmission[]> {
-  const { data, error } = await supabase
-    .from("listings")
-    .select(LISTING_COLUMNS)
-    .order("created_at", { ascending: false });
+  const rows = await fetchListingRows((columns) =>
+    supabase
+      .from("listings")
+      .select(columns)
+      .order("created_at", { ascending: false }),
+  );
 
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as unknown as DatabaseListing[]).map(toSubmission);
+  return rows.map(toSubmission);
 }
 
 function getStoredListingImagePath(imageUrl: string): string | null {
@@ -300,9 +419,12 @@ export async function updateListing(
       title: draft.title.trim(),
       quartier: draft.quartier,
       price: draft.price,
+      offer_type: draft.offerType,
+      card_badge: draft.cardBadge,
       surface: draft.surface,
-      rooms: draft.rooms,
-      bathrooms: draft.bathrooms,
+      bedrooms: draft.bedrooms,
+      living_rooms: draft.livingRooms,
+      showers: draft.showers,
       type: draft.type,
       priority: draft.priority ?? 0,
       image,

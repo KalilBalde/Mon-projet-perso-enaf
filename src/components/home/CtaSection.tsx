@@ -7,9 +7,9 @@ import { ArrowRight, Building2, Phone, Search } from "lucide-react";
 const CTA_ITEMS = [
   {
     icon: Phone,
-    label: "Propriétaire",
-    title: "Vous vendez votre bien ?",
-    description: "Confiez votre maison, appartement ou terrain à notre équipe.",
+    label: "Vendeur",
+    title: "Vendre votre bien",
+    description: "Confiez sa vente à notre équipe.",
     action: "Nous contacter",
     href: "tel:+224627040280",
     external: true,
@@ -17,8 +17,8 @@ const CTA_ITEMS = [
   {
     icon: Search,
     label: "Acquéreur",
-    title: "Vous cherchez un terrain à acheter ?",
-    description: "Trouvez une opportunité adaptée à votre projet.",
+    title: "Acheter un terrain",
+    description: "Trouvez le terrain adapté à votre projet.",
     action: "Voir les annonces",
     href: "/annonces",
     external: false,
@@ -26,8 +26,8 @@ const CTA_ITEMS = [
   {
     icon: Building2,
     label: "Gestion immobilière",
-    title: "Vous voulez confier votre bien ?",
-    description: "Nous gérons votre logement avec sérieux et respect.",
+    title: "Confier votre bien",
+    description: "Gestion fiable de votre logement.",
     action: "Confier mon bien",
     href: "tel:+224627040280",
     external: true,
@@ -203,13 +203,13 @@ export default function CtaSection() {
           background: #0f5fae;
         }
 
-        @media (max-width: 900px) and (min-width: 769px) {
+        @media (max-width: 1100px) and (min-width: 901px) {
           .cta-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .cta-section {
             padding-right: 16px !important;
             padding-left: 16px !important;
@@ -232,21 +232,22 @@ export default function CtaSection() {
           }
 
           .cta-card {
-            flex: 0 0 88vw;
-            width: 88vw;
-            min-height: 184px;
-            padding: 18px;
+            flex: 0 0 calc((100% - 36px) / 2);
+            width: auto;
+            max-width: none;
+            min-height: 168px;
+            padding: 16px;
             scroll-snap-align: start;
           }
 
           .cta-card-top {
-            gap: 10px;
-            min-height: 62px;
+            gap: 9px;
+            min-height: 54px;
           }
 
           .cta-card-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
           }
 
           .cta-card-label {
@@ -254,31 +255,130 @@ export default function CtaSection() {
           }
 
           .cta-card-title {
-            font-size: 21px;
+            font-size: 19px;
           }
 
           .cta-card-description {
-            min-height: 36px;
-            margin-top: 11px;
-            font-size: 11px;
+            min-height: 0;
+            margin-top: 8px;
+            font-size: 12px;
           }
 
           .cta-card-link {
-            margin-top: 14px;
-            padding: 8px 11px;
-            font-size: 10px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 11px;
           }
         }
 
         @media (max-width: 390px) {
           .cta-card {
-            flex-basis: 88vw;
-            width: 88vw;
-            padding: 17px;
+            flex-basis: calc((100% - 36px) / 2);
+            width: auto;
+            padding: 15px;
           }
 
           .cta-card-title {
-            font-size: 19px;
+            font-size: 18px;
+          }
+        }
+
+        @media (max-width: 900px) and (orientation: portrait) {
+          .cta-card {
+            min-height: 154px;
+            align-items: stretch;
+            padding: 12px;
+            border-color: #c9dcef;
+            border-radius: 12px;
+            background: linear-gradient(155deg, #f1f7fe 0%, #dceafa 100%);
+            box-shadow: 0 7px 18px rgba(10, 46, 92, 0.1);
+            text-align: left;
+          }
+
+          .cta-card-top {
+            align-items: center;
+            gap: 7px;
+            min-height: 28px;
+          }
+
+          .cta-card-label {
+            margin: 0;
+            font-size: 8px;
+            letter-spacing: 0.8px;
+          }
+
+          .cta-card-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
+          }
+
+          .cta-card-description {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+
+          .cta-card-title {
+            display: block;
+            font-size: 14px;
+            margin-top: 6px;
+            line-height: 1.2;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+
+          .cta-card-description {
+            align-self: stretch;
+            width: 100%;
+            margin-top: 5px;
+            font-size: 11px;
+            line-height: 1.35;
+            text-align: left;
+          }
+
+          .cta-card-link {
+            align-self: flex-start;
+            margin-top: auto;
+            padding: 7px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            font-size: 10px;
+            box-shadow: 0 3px 8px rgba(8, 59, 115, 0.18);
+          }
+        }
+
+        @media (max-width: 900px) and (orientation: landscape) {
+          .cta-card {
+            flex: 0 0 calc((100% - 48px) / 3);
+            width: auto;
+            max-width: none;
+            min-height: 160px;
+            padding: 16px;
+          }
+
+          .cta-card-top {
+            min-height: 50px;
+          }
+
+          .cta-card-icon {
+            width: 36px;
+            height: 36px;
+          }
+
+          .cta-card-title {
+            font-size: 18px;
+          }
+
+          .cta-card-description {
+            min-height: 0;
+            margin-top: 8px;
+            font-size: 11px;
+          }
+
+          .cta-card-link {
+            margin-top: 10px;
           }
         }
       `}</style>
@@ -299,12 +399,10 @@ export default function CtaSection() {
                 <div className="cta-card-icon">
                   <Icon size={20} strokeWidth={1.8} />
                 </div>
-
-                <div>
-                  <span className="cta-card-label">{item.label}</span>
-                  <h2 className="cta-card-title">{item.title}</h2>
-                </div>
+                <span className="cta-card-label">{item.label}</span>
               </div>
+
+              <h2 className="cta-card-title">{item.title}</h2>
 
               <p className="cta-card-description">
                 {item.description}

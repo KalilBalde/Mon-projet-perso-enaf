@@ -1,6 +1,8 @@
-@media (max-width: 760px) {
-  .compact .typeTag,
-  .compact .extraChip {
-    display: none;
-  }
+.featureBadges {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.featureBadges::-webkit-scrollbar {
+  display: none;
 }

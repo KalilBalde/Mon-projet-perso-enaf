@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { Home, RotateCcw } from "lucide-react";
 import HeroSection from "../components/home/HeroSection";
 import StatsSection from "../components/home/StatsSection";
 import FeaturesSection from "../components/home/FeaturesSection";
-import CtaSection from "../components/home/CtaSection";
 import ViewAllButton from "../components/shared/ViewAllButton";
 import ListingsCarousel from "../components/shared/ListingsCarousel";
+import ListingRecommendations from "../components/shared/ListingRecommendations";
+import { RESET_LISTING_FILTERS_EVENT } from "../data/constants";
 import { listingRepository } from "../lib/listings/repository";
 import { fetchPublishedListings } from "../lib/listings/database";
 import type { Listing, SearchFilters } from "../types";
 
 const DEFAULT_FILTERS: SearchFilters = {
   type: "Tous types",
-  quartier: "Tous les quartiers",
+  quartier: "",
   budgetMax: "",
 };
 
@@ -52,13 +53,13 @@ export default function HomePage() {
 
   const filteredListings = listingRepository.findAll({
     type: activeFilters.type,
-    quartier: activeFilters.quartier,
+    quartier: activeFilters.quartier.trim(),
     budgetMax: parseBudget(activeFilters.budgetMax),
   }, databaseListings);
 
   const hasActiveSearch =
     activeFilters.type !== "Tous types" ||
-    activeFilters.quartier !== "Tous les quartiers" ||
+    activeFilters.quartier.trim() !== "" ||
     activeFilters.budgetMax.trim() !== "";
 
   const handleResetFilters = () => {
@@ -70,6 +71,16 @@ export default function HomePage() {
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    const resetFiltersFromLogo = () => {
+      setActiveFilters(DEFAULT_FILTERS);
+      setResetVersion((currentVersion) => currentVersion + 1);
+    };
+
+    window.addEventListener(RESET_LISTING_FILTERS_EVENT, resetFiltersFromLogo);
+    return () => window.removeEventListener(RESET_LISTING_FILTERS_EVENT, resetFiltersFromLogo);
+  }, []);
 
   return (
     <>
@@ -94,6 +105,19 @@ export default function HomePage() {
             justify-content: space-between;
             gap: 16px;
             margin-bottom: 22px;
+          }
+
+          .listings-heading-main {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-width: 0;
+          }
+
+          .listings-heading-title {
+            min-width: 0;
           }
 
           .listings-heading-actions {
@@ -135,22 +159,32 @@ export default function HomePage() {
             }
 
             .listings-heading {
-              align-items: flex-start;
-              gap: 8px;
+              flex-direction: column;
+              align-items: stretch;
+              gap: 10px;
               margin-bottom: 16px;
             }
 
+            .listings-heading-main {
+              width: 100%;
+            }
+
             .listings-heading-actions {
+              justify-content: flex-start;
+              flex-wrap: wrap;
               gap: 5px;
+              width: 100%;
             }
 
             .reset-filters-button {
-              width: 36px;
-              padding: 0;
+              width: auto;
+              min-height: 34px;
+              padding: 0 8px;
+              font-size: 10px;
             }
 
             .reset-filters-label {
-              display: none;
+              display: inline;
             }
           }
         `}</style>
@@ -163,7 +197,8 @@ export default function HomePage() {
           }}
         >
           <div className="listings-heading">
-            <div style={{ minWidth: 0 }}>
+            <div className="listings-heading-main">
+              <div className="listings-heading-title">
               <span
                 style={{
                   display: "block",
@@ -197,37 +232,54 @@ export default function HomePage() {
                     } trouvé${
                       filteredListings.length > 1 ? "s" : ""
                     }`
-                  : "Dernières annonces"}
+                  : "Annonces en vedette"}
               </h2>
+              </div>
+              <ViewAllButton />
             </div>
 
             <div className="listings-heading-actions">
               {hasActiveSearch && (
-                <button
-                  type="button"
-                  className="reset-filters-button"
-                  aria-label="Réinitialiser les filtres"
-                  title="Réinitialiser les filtres"
-                  onClick={handleResetFilters}
-                >
-                  <RotateCcw size={14} />
-                  <span className="reset-filters-label">
-                    Réinitialiser la recherche
-                  </span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="reset-filters-button"
+                    aria-label="Réinitialiser les filtres"
+                    title="Réinitialiser les filtres"
+                    onClick={handleResetFilters}
+                  >
+                    <RotateCcw size={14} />
+                    <span className="reset-filters-label">Réinitialiser les filtres</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="reset-filters-button"
+                    aria-label="Retour à l’accueil"
+                    title="Retour à l’accueil"
+                    onClick={handleResetFilters}
+                  >
+                    <Home size={14} />
+                    <span className="reset-filters-label">Retour à l’accueil</span>
+                  </button>
+                </>
               )}
 
-              <ViewAllButton />
             </div>
           </div>
 
-          <ListingsCarousel listings={filteredListings} />
+          <ListingsCarousel
+            listings={filteredListings}
+            isFiltered={hasActiveSearch}
+          />
         </div>
       </section>
 
       <StatsSection />
       <FeaturesSection />
-      <CtaSection />
+      <ListingRecommendations
+        listings={listingRepository.findAll({ limit: 10 }, databaseListings)}
+        title="Annonces récentes"
+      />
     </>
   );
 }

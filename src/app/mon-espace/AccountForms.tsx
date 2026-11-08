@@ -7,7 +7,7 @@ import { createClient } from "../../lib/supabase/client";
 import styles from "./page.module.css";
 
 type FormMode = "login" | "signup";
-type SignupRole = "tenant" | "landlord";
+type SignupRole = "tenant" | "real_estate_agent";
 type Feedback = { type: "error" | "success"; message: string } | null;
 
 function getErrorMessage(code: string | undefined, message: string) {
@@ -143,8 +143,8 @@ export default function AccountForms({
           setCanResendConfirmation(true);
           setFeedback({
             type: "success",
-            message: signupRole === "landlord"
-              ? "Compte créé avec le profil Locataire. Ta demande Bailleur sera activée après validation. Consulte ton e-mail pour confirmer ton adresse."
+            message: signupRole === "real_estate_agent"
+              ? "Compte créé avec le profil Locataire. Ta demande d’accès comme agent immobilier sera étudiée par ENAFIM après confirmation de ton adresse e-mail."
               : "Compte créé. Consulte ta boîte e-mail et confirme ton adresse avant de te connecter.",
           });
         }
@@ -289,7 +289,7 @@ export default function AccountForms({
               </label>
               <label
                 className={
-                  signupRole === "landlord"
+                  signupRole === "real_estate_agent"
                     ? styles.accountTypeSelected
                     : styles.accountTypeOption
                 }
@@ -297,13 +297,13 @@ export default function AccountForms({
                 <input
                   type="radio"
                   name="requestedRole"
-                  value="landlord"
-                  checked={signupRole === "landlord"}
-                  onChange={() => setSignupRole("landlord")}
+                  value="real_estate_agent"
+                  checked={signupRole === "real_estate_agent"}
+                  onChange={() => setSignupRole("real_estate_agent")}
                 />
                 <span>
-                  <strong>Bailleur</strong>
-                  <small>Validation par ENAFIM</small>
+                  <strong>Agent immobilier</strong>
+                  <small>Profil professionnel soumis à validation</small>
                 </span>
               </label>
             </div>

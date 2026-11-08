@@ -5,19 +5,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bath,
   BedDouble,
+  Eye,
   Heart,
   LandPlot,
   MapPin,
   Maximize,
+  Sofa,
 } from "lucide-react";
 import type { Listing } from "../../types";
 import { getFavoriteIds, toggleFavorite } from "../../lib/favorites/storage";
 import { listingRepository } from "../../lib/listings/repository";
-import { formatPrice } from "../../utils/format";
+import { formatListingPrice } from "../../utils/format";
 import styles from "./ListingCard.module.css";
 
 const FALLBACK_IMAGE =
@@ -30,6 +32,26 @@ interface StatusBadge {
 }
 
 function getStatusBadge(listing: Listing): StatusBadge | null {
+  if (listing.cardBadge === null) {
+    return null;
+  }
+
+  if (listing.cardBadge === "sold") {
+    return { label: "Vendu", background: "#c0392b", color: "#fff" };
+  }
+
+  if (listing.cardBadge === "rented") {
+    return { label: "Déjà loué", background: "#c0392b", color: "#fff" };
+  }
+
+  if (listing.cardBadge === "new") {
+    return { label: "Nouveau", background: "#1a6dd4", color: "#fff" };
+  }
+
+  if (listing.cardBadge === "title_deed") {
+    return { label: "Titre foncier", background: "#1a6dd4", color: "#fff" };
+  }
+
   if (listing.status === "sold") {
     return { label: "Vendu", background: "#c0392b", color: "#fff" };
   }
@@ -45,6 +67,27 @@ function getStatusBadge(listing: Listing): StatusBadge | null {
   return null;
 }
 
+function getUniqueListingImages(listing: Listing): string[] {
+  const images = new Map<string, string>();
+
+  for (const image of [listing.image, ...(listing.images ?? [])]) {
+    try {
+      const url = new URL(image);
+      const identity = `${url.origin}${url.pathname}`;
+
+      if (!images.has(identity)) {
+        images.set(identity, image);
+      }
+    } catch {
+      if (!images.has(image)) {
+        images.set(image, image);
+      }
+    }
+  }
+
+  return [...images.values()];
+}
+
 export default function ListingCard({
   listing,
   compact = false,
@@ -54,6 +97,9 @@ export default function ListingCard({
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const imageTouchStartXRef = useRef<number | null>(null);
+  const ignoreImageClickUntilRef = useRef(0);
 
   useEffect(() => {
     setIsFavorite(getFavoriteIds().includes(listing.id));
@@ -62,6 +108,42 @@ export default function ListingCard({
   const isTerrain = listing.type === "Terrain-Vide";
   const statusBadge = getStatusBadge(listing);
   const listingSlug = listingRepository.getSlug(listing);
+  const listingImages = getUniqueListingImages(listing);
+  const offerLabel =
+    listing.offerType === "rent"
+      ? "À louer"
+      : listing.offerType === "sale"
+        ? "À vendre"
+        : null;
+
+    const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      imageTouchStartXRef.current = event.touches[0]?.clientX ?? null;
+    };
+
+    const handleImageTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      const startX = imageTouchStartXRef.current;
+      const endX = event.changedTouches[0]?.clientX;
+      imageTouchStartXRef.current = null;
+
+      if (startX === null || endX === undefined || listingImages.length < 2) {
+        return;
+      }
+
+      const deltaX = endX - startX;
+
+      if (Math.abs(deltaX) < 30) {
+        return;
+      }
+
+      ignoreImageClickUntilRef.current = Date.now() + 500;
+      setActiveImageIndex((currentIndex) =>
+        deltaX < 0
+          ? (currentIndex + 1) % listingImages.length
+          : (currentIndex - 1 + listingImages.length) % listingImages.length,
+      );
+    };
 
   return (
     <article
@@ -71,7 +153,7 @@ export default function ListingCard({
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        height: "100%",
+        height: "auto",
         overflow: "hidden",
         border: "1px solid #e7edf4",
         borderRadius: 14,
@@ -86,29 +168,41 @@ export default function ListingCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link
-        href={`/annonces/${listingSlug}`}
+      <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: 0,
-          color: "inherit",
-          textDecoration: "none",
+          position: "relative",
+          flexShrink: 0,
+          height: compact ? "var(--compact-image-height, 132px)" : 180,
+          overflow: "hidden",
+          background: "#eaf0f6",
+          touchAction: "pan-y",
+        }}
+        onTouchStart={handleImageTouchStart}
+        onTouchEnd={handleImageTouchEnd}
+        onTouchCancel={() => {
+          imageTouchStartXRef.current = null;
         }}
       >
-        <div
+        <Link
+          href={`/annonces/${listingSlug}`}
+          aria-label={`Voir l’annonce ${listing.title}`}
+          onClick={(event) => {
+            if (Date.now() < ignoreImageClickUntilRef.current) {
+              event.preventDefault();
+              ignoreImageClickUntilRef.current = 0;
+            }
+          }}
           style={{
-            position: "relative",
-            flexShrink: 0,
-            height: compact ? "var(--compact-image-height, 132px)" : 180,
-            overflow: "hidden",
-            background: "#eaf0f6",
+            position: "absolute",
+            inset: 0,
+            display: "block",
+            color: "inherit",
+            textDecoration: "none",
           }}
         >
           <img
-            src={listing.image}
-            alt={listing.title}
+            src={listingImages[activeImageIndex] ?? FALLBACK_IMAGE}
+            alt={`${listing.title} - photo ${activeImageIndex + 1}`}
             loading="lazy"
             onError={(event) => {
               event.currentTarget.onerror = null;
@@ -154,27 +248,6 @@ export default function ListingCard({
           )}
 
           <span
-            className={styles.typeTag}
-            style={{
-              position: "absolute",
-              top: 12,
-              right: "var(--card-tag-right, 12px)",
-              maxWidth: "var(--card-tag-max, 48%)",
-              overflow: "hidden",
-              padding: "5px 9px",
-              borderRadius: 7,
-              background: "rgba(255,255,255,0.92)",
-              color: "#0a2e5c",
-              fontSize: 10,
-              fontWeight: 700,
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {listing.type}
-          </span>
-
-          <span
             style={{
               position: "absolute",
               bottom: "var(--card-badge-offset, 12px)",
@@ -187,10 +260,64 @@ export default function ListingCard({
               fontWeight: 800,
             }}
           >
-            {formatPrice(listing.price)}
+            {formatListingPrice(listing.price, listing.offerType)}
           </span>
-        </div>
+        </Link>
 
+        {listingImages.length > 1 && (
+          <div
+            role="group"
+            aria-label="Photos de l’annonce"
+            style={{
+              position: "absolute",
+              right: 12,
+              bottom: 12,
+              zIndex: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 7px",
+              borderRadius: 999,
+              background: "rgba(10, 46, 92, 0.62)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            {listingImages.map((image, index) => (
+              <button
+                key={`${image}-${index}`}
+                type="button"
+                aria-label={`Afficher la photo ${index + 1} sur ${listingImages.length}`}
+                aria-pressed={activeImageIndex === index}
+                onClick={() => setActiveImageIndex(index)}
+                style={{
+                  width: activeImageIndex === index ? 12 : 7,
+                  height: 7,
+                  padding: 0,
+                  border: 0,
+                  borderRadius: 999,
+                  background: activeImageIndex === index
+                    ? "#fff"
+                    : "rgba(255, 255, 255, 0.55)",
+                  cursor: "pointer",
+                  transition: "width 0.18s ease, background 0.18s ease",
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Link
+        href={`/annonces/${listingSlug}`}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minWidth: 0,
+          color: "inherit",
+          textDecoration: "none",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -209,11 +336,61 @@ export default function ListingCard({
               fontWeight: 700,
               lineHeight: 1.35,
               WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
+              WebkitLineClamp: compact ? 1 : 2,
             }}
           >
             {listing.title}
           </h3>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 6,
+              minWidth: 0,
+              marginTop: 4,
+            }}
+          >
+            <span
+              className={styles.typeTag}
+              style={{
+                flex: "0 1 auto",
+                minWidth: 0,
+                maxWidth: "calc(100% - 48px)",
+                overflow: "hidden",
+                padding: "3px 7px",
+                borderRadius: 6,
+                background: "#f0f6ff",
+                color: "#1a5da8",
+                fontSize: "var(--card-type-size, 10px)",
+                fontWeight: 700,
+                lineHeight: 1.25,
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {listing.type}{offerLabel ? ` · ${offerLabel}` : ""}
+            </span>
+
+            <span
+              title={`${listing.viewCount ?? 0} vues`}
+              aria-label={`${listing.viewCount ?? 0} vues`}
+              style={{
+                display: "inline-flex",
+                flex: "0 0 auto",
+                alignItems: "center",
+                gap: 4,
+                color: "#718198",
+                fontSize: "var(--card-meta-size, 11px)",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Eye size={13} aria-hidden="true" />
+              {listing.viewCount ?? 0} vues
+            </span>
+          </div>
 
           <div
             style={{
@@ -231,41 +408,49 @@ export default function ListingCard({
           </div>
 
           <div
+            className={styles.featureBadges}
             style={{
               display: "flex",
-              flexWrap: "wrap",
-              gap: 6,
-              marginTop: "auto",
-              paddingTop: "var(--card-chips-pad-top, 12px)",
+              flexWrap: "nowrap",
+              gap: 5,
+              overflowX: "auto",
+              overflowY: "hidden",
+              marginTop: "var(--card-chips-margin-top, 18px)",
+              paddingTop: "var(--card-chips-pad-top, 7px)",
               borderTop: "1px solid #eef2f6",
             }}
           >
             <FeatureBadge
-              icon={<Maximize size={12} />}
+              icon={<Maximize size={13} />}
               label={`${listing.surface} m²`}
             />
 
-            {!isTerrain && (
-              <>
-                <FeatureBadge
-                  icon={<BedDouble size={12} />}
-                  label={`${listing.rooms} pièce${
-                    listing.rooms > 1 ? "s" : ""
-                  }`}
-                />
+            {!isTerrain && listing.bedrooms > 0 && (
+              <FeatureBadge
+                icon={<BedDouble size={13} />}
+                label={`${listing.bedrooms} chambre${listing.bedrooms > 1 ? "s" : ""}`}
+              />
+            )}
 
-                <span className={styles.extraChip}>
-                  <FeatureBadge
-                    icon={<Bath size={12} />}
-                    label={`${listing.bathrooms} sdb`}
-                  />
-                </span>
-              </>
+            {!isTerrain && listing.livingRooms > 0 && (
+              <FeatureBadge
+                icon={<Sofa size={13} />}
+                label={`${listing.livingRooms} salon${listing.livingRooms > 1 ? "s" : ""}`}
+              />
+            )}
+
+            {!isTerrain && listing.showers > 0 && (
+              <span className={styles.extraChip}>
+                <FeatureBadge
+                  icon={<Bath size={13} />}
+                  label={`${listing.showers} douche${listing.showers > 1 ? "s" : ""}`}
+                />
+              </span>
             )}
 
             {isTerrain && (
               <FeatureBadge
-                icon={<LandPlot size={12} />}
+                icon={<LandPlot size={13} />}
                 label="Terrain"
               />
             )}
@@ -321,13 +506,14 @@ function FeatureBadge({
     <span
       style={{
         display: "inline-flex",
+        flex: "0 0 auto",
         alignItems: "center",
         gap: 4,
-        padding: "5px 7px",
+        padding: "var(--card-feature-padding, 4px 6px)",
         borderRadius: 6,
         background: "#f4f7fb",
         color: "#596b80",
-        fontSize: 11,
+        fontSize: "var(--card-feature-size, 10px)",
         fontWeight: 600,
         whiteSpace: "nowrap",
       }}

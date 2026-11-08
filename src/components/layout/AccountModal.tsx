@@ -22,7 +22,7 @@ import { LOGO_SRC } from "../../data/constants";
 import { getFavoriteIds } from "../../lib/favorites/storage";
 import {
   getProfile,
-  listPendingLandlordRequests,
+  listPendingAgentRequests,
 } from "../../lib/profiles/repository";
 import {
   hasPermission,
@@ -51,7 +51,7 @@ export default function AccountModal({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [favoritesCount, setFavoritesCount] = useState(0);
-  const [pendingLandlordCount, setPendingLandlordCount] = useState<number | null>(null);
+  const [pendingAgentCount, setPendingAgentCount] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const firstNames =
     (user?.user_metadata?.first_names as string | undefined) ?? "";
@@ -73,7 +73,7 @@ export default function AccountModal({
       | "my_listings"
       | "submit_listing"
       | "listing_review"
-      | "landlord_requests"
+      | "agent_requests"
       | "role_management",
   ) => {
     onClose();
@@ -149,10 +149,10 @@ export default function AccountModal({
       ? [
           {
             Icon: ShieldCheck,
-            label: "Demandes Bailleur",
+            label: "Demandes d’agents immobiliers",
             hint: "Valider les demandes",
-            count: pendingLandlordCount ?? undefined,
-            onSelect: () => openAccountSection("landlord_requests"),
+            count: pendingAgentCount ?? undefined,
+            onSelect: () => openAccountSection("agent_requests"),
           },
         ]
       : []),
@@ -232,21 +232,21 @@ export default function AccountModal({
       !userRole ||
       !hasPermission(userRole, "manage_users")
     ) {
-      setPendingLandlordCount(null);
+      setPendingAgentCount(null);
       return;
     }
 
     let active = true;
 
-    void listPendingLandlordRequests(createClient())
+    void listPendingAgentRequests(createClient())
       .then((requests) => {
         if (active) {
-          setPendingLandlordCount(requests.length);
+          setPendingAgentCount(requests.length);
         }
       })
       .catch(() => {
         if (active) {
-          setPendingLandlordCount(null);
+          setPendingAgentCount(null);
         }
       });
 

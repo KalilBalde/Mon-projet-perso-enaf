@@ -1,6 +1,7 @@
 /* ─── CONSTANTS ─── */
 
 export const LOGO_SRC = "/images/logo_enafim.png";
+export const RESET_LISTING_FILTERS_EVENT = "enafim:reset-listing-filters";
 
 /* 4 images : rues residentielles, rangees de batiments, quartiers urbains */
 export const HERO_SLIDES = [
@@ -18,6 +19,13 @@ export const NAV_LINKS = [
 ];
 
 export const PROPERTY_TYPES = ["Tous types", "Appartement", "Maison", "Terrain-Vide", "Chambre-Studio", "Villa"];
+
+export const LISTING_AMENITIES = [
+  "Parking",
+  "Gardiens de sécurité",
+  "Réservoir d’eau",
+  "Meublé",
+] as const;
 
 export const QUARTIERS = ["Tous les quartiers", "Cimenterie", "Kagbelen", "Sonfonia", "Cite", "Cosa", "Bambeto", "Lambagni", "Kipe", "Hamdallaye", "Nongo"];
 

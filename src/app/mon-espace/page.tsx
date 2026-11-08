@@ -28,12 +28,12 @@ import {
 import {
   getProfile,
   demoteManagedAccountToTenant,
-  type LandlordRequest,
+  type AgentRequest,
   type ManagedAccount,
   listManagedAccounts,
-  listPendingLandlordRequests,
+  listPendingAgentRequests,
   promoteAccountToAdmin,
-  reviewLandlordRequest,
+  reviewAgentRequest,
   type Profile,
   updateEmailNotifications,
   updateProfile,
@@ -60,7 +60,7 @@ import ListingSubmissionForm from "./ListingSubmissionForm";
 import SignOutButton from "./SignOutButton";
 import styles from "./dashboard.module.css";
 import { useContactModal } from "../../components/contact/ContactModal";
-import { formatPrice } from "../../utils/format";
+import { formatListingPrice } from "../../utils/format";
 
 type AccountSection =
   | "favorites"
@@ -70,7 +70,7 @@ type AccountSection =
   | "submit_listing"
   | "listing_review"
   | "listing_management"
-  | "landlord_requests"
+  | "agent_requests"
   | "role_management";
 type Feedback = { ok: boolean; text: string } | null;
 
@@ -82,7 +82,7 @@ const TABS: { id: AccountSection; label: string; Icon: LucideIcon }[] = [
   { id: "submit_listing", label: "Ajouter une annonce", Icon: Plus },
   { id: "listing_review", label: "Annonces à valider", Icon: ClipboardCheck },
   { id: "listing_management", label: "Gestion des annonces", Icon: Building2 },
-  { id: "landlord_requests", label: "Demandes Bailleur", Icon: ShieldCheck },
+  { id: "agent_requests", label: "Demandes d’agents immobiliers", Icon: ShieldCheck },
   { id: "role_management", label: "Gestion des rôles", Icon: UserCog },
 ];
 
@@ -122,8 +122,8 @@ export default function AccountPage() {
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
   const [notificationFeedback, setNotificationFeedback] =
     useState<Feedback>(null);
-  const [landlordRequests, setLandlordRequests] = useState<LandlordRequest[]>([]);
-  const [isLoadingLandlordRequests, setIsLoadingLandlordRequests] = useState(false);
+  const [agentRequests, setAgentRequests] = useState<AgentRequest[]>([]);
+  const [isLoadingAgentRequests, setIsLoadingAgentRequests] = useState(false);
   const [reviewingUserId, setReviewingUserId] = useState<string | null>(null);
   const [reviewFeedback, setReviewFeedback] = useState<Feedback>(null);
   const [isLoadingMyListings, setIsLoadingMyListings] = useState(false);
@@ -157,7 +157,7 @@ export default function AccountPage() {
       requestedSection === "submit_listing" ||
       requestedSection === "listing_review" ||
       requestedSection === "listing_management" ||
-      requestedSection === "landlord_requests" ||
+      requestedSection === "agent_requests" ||
       requestedSection === "role_management"
     ) {
       setActiveSection(requestedSection);
@@ -226,7 +226,7 @@ export default function AccountPage() {
     };
   }, [user]);
 
-  const canReviewLandlordRequests = Boolean(
+  const canReviewAgentRequests = Boolean(
     profile && hasPermission(profile.role, "manage_users"),
   );
   const canManageRoles = Boolean(
@@ -254,30 +254,30 @@ export default function AccountPage() {
   }, []);
 
   useEffect(() => {
-    if (!user || !canReviewLandlordRequests) {
-      setLandlordRequests([]);
+    if (!user || !canReviewAgentRequests) {
+      setAgentRequests([]);
       return;
     }
 
     let active = true;
-    setIsLoadingLandlordRequests(true);
+    setIsLoadingAgentRequests(true);
 
-    void listPendingLandlordRequests(createClient())
+    void listPendingAgentRequests(createClient())
       .then((requests) => {
         if (active) {
-          setLandlordRequests(requests);
+          setAgentRequests(requests);
         }
       })
       .finally(() => {
         if (active) {
-          setIsLoadingLandlordRequests(false);
+          setIsLoadingAgentRequests(false);
         }
       });
 
     return () => {
       active = false;
     };
-  }, [user, canReviewLandlordRequests]);
+  }, [user, canReviewAgentRequests]);
 
   useEffect(() => {
     if (!user || !canCreateListings) {
@@ -471,22 +471,22 @@ export default function AccountPage() {
     setIsSavingNotifications(false);
   };
 
-  const handleLandlordRequestReview = async (
-    request: LandlordRequest,
+  const handleAgentRequestReview = async (
+    request: AgentRequest,
     approve: boolean,
   ) => {
     setReviewingUserId(request.user_id);
     setReviewFeedback(null);
 
     try {
-      const reviewed = await reviewLandlordRequest(
+      const reviewed = await reviewAgentRequest(
         createClient(),
         request.user_id,
         approve,
       );
 
       if (reviewed) {
-        setLandlordRequests((current) =>
+        setAgentRequests((current) =>
           current.filter((item) => item.user_id !== request.user_id),
         );
         setReviewFeedback({
@@ -695,8 +695,8 @@ export default function AccountPage() {
     .slice(0, 10);
 
   const visibleTabs = TABS.filter((tab) => {
-    if (tab.id === "landlord_requests") {
-      return canReviewLandlordRequests;
+    if (tab.id === "agent_requests") {
+      return canReviewAgentRequests;
     }
 
     if (tab.id === "role_management") {
@@ -782,10 +782,10 @@ export default function AccountPage() {
                         {USER_ROLE_LABELS[profile.role]}
                       </span>
                     )}
-                    {profile?.requested_role === "landlord" &&
+                    {profile?.requested_role === "real_estate_agent" &&
                       profile.role_request_status === "pending" && (
-                        <p className={styles.landlordRequestStatus}>
-                          Demande Bailleur en attente de validation
+                        <p className={styles.agentRequestStatus}>
+                          Demande d’accès comme agent immobilier en attente de validation
                         </p>
                       )}
                   </div>
@@ -912,8 +912,8 @@ export default function AccountPage() {
                             {id === "listing_review" && pendingListings.length > 0 && (
                               <span className={styles.count}>{pendingListings.length}</span>
                             )}
-                            {id === "landlord_requests" && landlordRequests.length > 0 && (
-                              <span className={styles.count}>{landlordRequests.length}</span>
+                            {id === "agent_requests" && agentRequests.length > 0 && (
+                              <span className={styles.count}>{agentRequests.length}</span>
                             )}
                           </button>
                         ))}
@@ -1002,7 +1002,7 @@ export default function AccountPage() {
                           <img src={listing.image} alt="" />
                           <div className={styles.ownerListingInfo}>
                             <h3>{listing.title}</h3>
-                            <p>{listing.quartier}, Conakry · {formatPrice(listing.price)}</p>
+                            <p>{listing.quartier}, Conakry · {formatListingPrice(listing.price, listing.offerType)}</p>
                           </div>
                           <span className={`${styles.moderationBadge} ${styles[`moderation_${listing.moderation_status}`]}`}>
                             {listing.moderation_status === "published"
@@ -1026,7 +1026,7 @@ export default function AccountPage() {
                     <div className={styles.sectionHeading}>
                       <span className={styles.sectionEyebrow}>Modération</span>
                       <h2>Annonces à valider</h2>
-                      <p>Les annonces Bailleur restent privées jusqu’à votre approbation.</p>
+                      <p>Les annonces déposées par les agents immobiliers restent privées jusqu’à votre approbation.</p>
                     </div>
                   </div>
                   {listingReviewFeedback && (
@@ -1048,7 +1048,7 @@ export default function AccountPage() {
                             <span className={styles.moderationBadge}>À valider</span>
                             <h3>{listing.title}</h3>
                             <p>{listing.type} · {listing.quartier}, Conakry</p>
-                            <p>{formatPrice(listing.price)} · {listing.surface} m² · {listing.rooms} pièce(s)</p>
+                            <p>{formatListingPrice(listing.price, listing.offerType)} · {listing.surface} m² · {listing.bedrooms} chambre(s)</p>
                           </div>
                           <div className={styles.requestActions}>
                             <button
@@ -1100,10 +1100,10 @@ export default function AccountPage() {
                       </button>
                     )}
                   </div>
-                  {profile?.requested_role === "landlord" &&
+                  {profile?.requested_role === "real_estate_agent" &&
                     profile.role_request_status === "pending" && (
                       <div className={styles.roleRequestNotice} role="status">
-                        Votre demande de profil Bailleur est en attente de validation par ENAFIM.
+                        Votre demande d’accès comme agent immobilier est en attente de validation par ENAFIM.
                         Votre compte conserve le rôle Locataire jusque-là.
                       </div>
                     )}
@@ -1175,13 +1175,13 @@ export default function AccountPage() {
                     <p className={styles.errorMessage}>Le profil n’a pas pu être chargé.</p>
                   )}
                 </div>
-              ) : activeSection === "landlord_requests" && canReviewLandlordRequests ? (
+              ) : activeSection === "agent_requests" && canReviewAgentRequests ? (
                 <section>
                   <div className={styles.sectionTop}>
                     <div className={styles.sectionHeading}>
                       <span className={styles.sectionEyebrow}>Administration</span>
-                      <h2>Demandes Bailleur</h2>
-                      <p>Les droits Bailleur ne sont accordés qu'après votre validation.</p>
+                      <h2>Demandes d’agents immobiliers</h2>
+                      <p>L’accès professionnel n’est accordé qu’après validation par ENAFIM.</p>
                     </div>
                   </div>
 
@@ -1194,15 +1194,15 @@ export default function AccountPage() {
                     </p>
                   )}
 
-                  {isLoadingLandlordRequests ? (
+                  {isLoadingAgentRequests ? (
                     <p className={styles.accountLoading}>Chargement des demandes...</p>
-                  ) : landlordRequests.length === 0 ? (
+                  ) : agentRequests.length === 0 ? (
                     <div className={styles.emptyRequestQueue}>
-                      Aucune demande Bailleur en attente.
+                      Aucune demande d’agent immobilier en attente.
                     </div>
                   ) : (
                     <div className={styles.requestQueue}>
-                      {landlordRequests.map((request) => (
+                      {agentRequests.map((request) => (
                         <article key={request.user_id} className={styles.requestItem}>
                           <div className={styles.requestIdentity}>
                             <span className={styles.requestAvatar} aria-hidden="true">
@@ -1219,7 +1219,7 @@ export default function AccountPage() {
                               className={styles.approveButton}
                               type="button"
                               disabled={reviewingUserId !== null}
-                              onClick={() => handleLandlordRequestReview(request, true)}
+                              onClick={() => handleAgentRequestReview(request, true)}
                             >
                               {reviewingUserId === request.user_id ? "Traitement..." : "Approuver"}
                             </button>
@@ -1227,7 +1227,7 @@ export default function AccountPage() {
                               className={styles.rejectButton}
                               type="button"
                               disabled={reviewingUserId !== null}
-                              onClick={() => handleLandlordRequestReview(request, false)}
+                              onClick={() => handleAgentRequestReview(request, false)}
                             >
                               Refuser
                             </button>
@@ -1247,8 +1247,8 @@ export default function AccountPage() {
                       <h2>Gestion des rôles</h2>
                       <p>
                         {profile?.role === "admin"
-                          ? "Vous pouvez retirer le rôle Bailleur. Seul un Super-admin peut attribuer ou retirer le rôle Administrateur."
-                          : "Gérez les rôles Bailleur et Administrateur des comptes. Les comptes Super-admin sont protégés."}
+                          ? "Vous pouvez retirer le rôle Agent immobilier. Seul un Super-admin peut attribuer ou retirer le rôle Administrateur."
+                          : "Gérez les rôles Agent immobilier et Administrateur. Les comptes Super-admin sont protégés."}
                       </p>
                     </div>
                   </div>
@@ -1289,10 +1289,10 @@ export default function AccountPage() {
                       {managedAccounts.map((account) => {
                         const canPromoteAccount =
                           profile?.role === "super_admin" &&
-                          (account.role === "tenant" || account.role === "landlord") &&
+                          (account.role === "tenant" || account.role === "real_estate_agent") &&
                           account.role_request_status !== "pending";
                         const canDemoteAccount =
-                          account.role === "landlord" ||
+                          account.role === "real_estate_agent" ||
                           (profile?.role === "super_admin" && account.role === "admin");
 
                         return (
@@ -1315,7 +1315,7 @@ export default function AccountPage() {
                                 className={styles.reviewRequestButton}
                                 type="button"
                                 disabled={changingManagedRoleUserId !== null}
-                                onClick={() => setActiveSection("landlord_requests")}
+                                onClick={() => setActiveSection("agent_requests")}
                               >
                                 Examiner la demande <ArrowRight size={15} aria-hidden="true" />
                               </button>
