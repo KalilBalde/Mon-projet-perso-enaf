@@ -1,21 +1,22 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserRole } from "../auth/permissions";
-import type { Listing, ListingCardBadge, ListingOfferType } from "../../types";
+import type { Listing, ListingCardBadge, ListingKitchen, ListingOfferType } from "../../types";
 
 export type ListingDraft = {
   title: string;
   quartier: string;
-  price: number;
+  price: number | null;
   offerType: ListingOfferType | null;
   cardBadge: ListingCardBadge | null;
-  surface: number;
-  bedrooms: number;
-  livingRooms: number;
-  showers: number;
+  surface: number | null;
+  bedrooms: number | null;
+  livingRooms: number | null;
+  showers: number | null;
+  kitchen: ListingKitchen | null;
   type: string;
   priority?: number;
-  image: string;
+  image: string | null;
   additionalImages?: string[];
   description: string;
   features: string[];
@@ -28,20 +29,21 @@ export type ListingSubmission = Listing & {
 
 interface DatabaseListing {
   id: number | string;
-  title: string;
-  quartier: string;
-  price: number;
+  title: string | null;
+  quartier: string | null;
+  price: number | null;
   offer_type: ListingOfferType | null;
-  surface: number;
-  bedrooms: number;
-  living_rooms: number;
-  showers: number;
-  type: string;
+  surface: number | null;
+  bedrooms: number | null;
+  living_rooms: number | null;
+  showers: number | null;
+  kitchen: ListingKitchen | null;
+  type: string | null;
   priority: number;
   status: "sold" | "rented" | null;
   card_badge?: ListingCardBadge | null;
   view_count?: number | null;
-  image: string;
+  image: string | null;
   images: string[] | null;
   description: string | null;
   features: string[] | null;
@@ -53,9 +55,10 @@ interface DatabaseListing {
 interface LegacyDatabaseListing extends Omit<
   DatabaseListing,
   "offer_type" | "bedrooms" | "living_rooms" | "showers"
+  | "kitchen"
 > {
-  rooms: number;
-  bathrooms: number;
+  rooms: number | null;
+  bathrooms: number | null;
 }
 
 type ListingReadResponse = {
@@ -66,11 +69,16 @@ type ListingReadResponse = {
 type ListingReadQuery = (columns: string) => PromiseLike<ListingReadResponse>;
 
 const LISTING_COLUMNS =
-  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 const LISTING_COLUMNS_WITHOUT_CARD_BADGE =
-  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 const LISTING_COLUMNS_WITH_VIEW_COUNT = `${LISTING_COLUMNS}, view_count`;
 const LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT = `${LISTING_COLUMNS_WITHOUT_CARD_BADGE}`;
+const LISTING_COLUMNS_WITHOUT_KITCHEN =
+  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+const LISTING_COLUMNS_WITHOUT_KITCHEN_AND_VIEW_COUNT = `${LISTING_COLUMNS_WITHOUT_KITCHEN}, view_count`;
+const LISTING_COLUMNS_WITHOUT_KITCHEN_OR_BADGE =
+  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 const LEGACY_LISTING_COLUMNS =
   "id, title, quartier, price, surface, rooms, bathrooms, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 
@@ -91,6 +99,9 @@ function createPublicClient() {
   }
 
   return createSupabaseClient(url, publishableKey, {
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
     auth: {
       autoRefreshToken: false,
       detectSessionInUrl: false,
@@ -102,20 +113,22 @@ function createPublicClient() {
 function toListing(row: DatabaseListing): Listing {
   return {
     id: Number(row.id),
-    title: row.title,
-    quartier: row.quartier,
-    price: Number(row.price),
+    title: row.title ?? "",
+    quartier: row.quartier ?? "",
+    price: row.price === null ? null : Number(row.price),
     offerType: row.offer_type,
-    surface: Number(row.surface),
+    surface: row.surface === null ? null : Number(row.surface),
     bedrooms: row.bedrooms,
     livingRooms: row.living_rooms,
     showers: row.showers,
-    type: row.type,
+    kitchen: row.kitchen ?? null,
+    type: row.type ?? "",
     priority: row.priority,
+    createdAt: row.created_at,
     status: row.status ?? undefined,
     cardBadge: row.card_badge ?? null,
     viewCount: Number(row.view_count ?? 0),
-    image: row.image,
+    image: row.image ?? null,
     images: row.images ?? undefined,
     description: row.description ?? undefined,
     features: row.features ?? undefined,
@@ -181,6 +194,59 @@ async function fetchListingRows(
     return [];
   }
 
+  const schemaWithoutKitchenAndViewCount = await query(
+    LISTING_COLUMNS_WITHOUT_KITCHEN_AND_VIEW_COUNT,
+  );
+
+  if (!schemaWithoutKitchenAndViewCount.error && schemaWithoutKitchenAndViewCount.data) {
+    return (schemaWithoutKitchenAndViewCount.data as unknown as DatabaseListing[]).map((row) => ({
+      ...row,
+      kitchen: null,
+      view_count: 0,
+    }));
+  }
+
+  if (!isMissingColumnError(schemaWithoutKitchenAndViewCount.error)) {
+    return [];
+  }
+
+  const schemaWithoutKitchen = await query(LISTING_COLUMNS_WITHOUT_KITCHEN);
+
+  if (!schemaWithoutKitchen.error && schemaWithoutKitchen.data) {
+    return (schemaWithoutKitchen.data as unknown as DatabaseListing[]).map((row) => ({
+      ...row,
+      kitchen: null,
+      view_count: 0,
+    }));
+  }
+
+  if (!isMissingColumnError(schemaWithoutKitchen.error)) {
+    return [];
+  }
+
+  const schemaWithoutKitchenOrBadge = await query(
+    LISTING_COLUMNS_WITHOUT_KITCHEN_OR_BADGE,
+  );
+
+  if (!schemaWithoutKitchenOrBadge.error && schemaWithoutKitchenOrBadge.data) {
+    return (schemaWithoutKitchenOrBadge.data as unknown as DatabaseListing[]).map((row) => ({
+      ...row,
+      kitchen: null,
+      card_badge: row.status === "sold"
+        ? "sold"
+        : row.status === "rented"
+          ? "rented"
+          : row.is_new
+            ? "new"
+            : null,
+      view_count: 0,
+    }));
+  }
+
+  if (!isMissingColumnError(schemaWithoutKitchenOrBadge.error)) {
+    return [];
+  }
+
   const legacyResult = await query(LEGACY_LISTING_COLUMNS);
 
   if (legacyResult.error || !legacyResult.data) {
@@ -194,6 +260,7 @@ async function fetchListingRows(
     bedrooms: row.rooms,
     living_rooms: 0,
     showers: row.bathrooms,
+    kitchen: null,
     card_badge: row.status === "sold"
       ? "sold"
       : row.status === "rented"
@@ -252,6 +319,7 @@ export async function fetchPublishedListings(): Promise<Listing[]> {
       .from("listings")
       .select(columns)
       .eq("moderation_status", "published")
+      .order("priority", { ascending: false })
       .order("created_at", { ascending: false }),
   );
 
@@ -284,13 +352,13 @@ export async function submitListing(
   draft: ListingDraft,
 ): Promise<{ listing: ListingSubmission | null; error: string | null }> {
   const moderationStatus = role === "real_estate_agent" ? "pending" : "published";
-  const image = draft.image.trim();
+  const image = draft.image?.trim() || null;
   const { data, error } = await supabase
     .from("listings")
     .insert({
       owner_id: ownerId,
-      title: draft.title.trim(),
-      quartier: draft.quartier,
+      title: draft.title.trim() || null,
+      quartier: draft.quartier.trim() || null,
       price: draft.price,
       offer_type: draft.offerType,
       card_badge: draft.cardBadge,
@@ -298,11 +366,12 @@ export async function submitListing(
       bedrooms: draft.bedrooms,
       living_rooms: draft.livingRooms,
       showers: draft.showers,
-      type: draft.type,
+      kitchen: draft.kitchen,
+      type: draft.type.trim() || null,
       is_new: true,
       status: null,
       image,
-      images: [image, ...(draft.additionalImages ?? [])],
+      images: [...(image ? [image] : []), ...(draft.additionalImages ?? [])],
       description: draft.description.trim(),
       features: draft.features,
       priority: 0,
@@ -412,12 +481,12 @@ export async function updateListing(
     return { listing: null, error: currentError?.message ?? "Listing not found" };
   }
 
-  const image = draft.image.trim();
+  const image = draft.image?.trim() || null;
   const { data, error } = await supabase
     .from("listings")
     .update({
-      title: draft.title.trim(),
-      quartier: draft.quartier,
+      title: draft.title.trim() || null,
+      quartier: draft.quartier.trim() || null,
       price: draft.price,
       offer_type: draft.offerType,
       card_badge: draft.cardBadge,
@@ -425,10 +494,11 @@ export async function updateListing(
       bedrooms: draft.bedrooms,
       living_rooms: draft.livingRooms,
       showers: draft.showers,
-      type: draft.type,
+      kitchen: draft.kitchen,
+      type: draft.type.trim() || null,
       priority: draft.priority ?? 0,
       image,
-      images: [image, ...(draft.additionalImages ?? [])],
+      images: [...(image ? [image] : []), ...(draft.additionalImages ?? [])],
       description: draft.description.trim(),
       features: draft.features,
     })
@@ -440,9 +510,9 @@ export async function updateListing(
     return { listing: null, error: error?.message ?? "Listing update failed" };
   }
 
-  const cleanupError = current.image === image
-    ? null
-    : await removeStoredListingImages(supabase, [current.image]);
+  const cleanupError = current.image && current.image !== image
+    ? await removeStoredListingImages(supabase, [current.image])
+    : null;
 
   return {
     listing: toSubmission(data as unknown as DatabaseListing),
@@ -474,7 +544,7 @@ export async function deleteListing(
   }
 
   const cleanupError = await removeStoredListingImages(supabase, [
-    current.image,
+    ...(current.image ? [current.image] : []),
     ...(current.images ?? []),
   ]);
   return { deleted: true, error: cleanupError };

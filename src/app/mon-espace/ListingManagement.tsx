@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Pencil, Save, Trash2, X } from "lucide-react";
-import { LISTING_AMENITIES, PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
+import { LISTING_AMENITIES, LISTING_IMAGE_PLACEHOLDER, PROPERTY_TYPES, QUARTIERS } from "../../data/constants";
 import {
   deleteListing,
   listManageableListings,
@@ -12,7 +12,7 @@ import {
   type ListingSubmission,
 } from "../../lib/listings/database";
 import { createClient } from "../../lib/supabase/client";
-import { formatListingPrice } from "../../utils/format";
+import { formatListingKitchen, formatListingPrice } from "../../utils/format";
 import type { ListingCardBadge } from "../../types";
 import styles from "./dashboard.module.css";
 
@@ -29,6 +29,7 @@ function createDraft(listing: ListingSubmission): ListingDraft {
     bedrooms: listing.bedrooms,
     livingRooms: listing.livingRooms,
     showers: listing.showers,
+    kitchen: listing.kitchen ?? null,
     type: listing.type,
     priority: listing.priority ?? 0,
     image: listing.image,
@@ -148,7 +149,7 @@ export default function ListingManagement({ userId }: { userId: string }) {
 
   const handleDelete = async (listing: ListingSubmission) => {
     const confirmed = window.confirm(
-      `La suppression de « ${listing.title} » est définitive. Supprimer aussi sa photo ?`,
+      `La suppression de « ${listing.title || "Annonce sans titre"} » est définitive. Supprimer aussi sa photo ?`,
     );
     if (!confirmed) return;
 
@@ -205,7 +206,7 @@ export default function ListingManagement({ userId }: { userId: string }) {
           {listings.map((listing) => (
             <div className={styles.managedListingItem} key={listing.id}>
               <article className={styles.managedListing}>
-                <img src={listing.image} alt="" />
+                <img src={listing.image ?? LISTING_IMAGE_PLACEHOLDER} alt="" />
                 <div className={styles.managedListingInfo}>
                   <span className={`${styles.moderationBadge} ${styles[`moderation_${listing.moderation_status}`]}`}>
                     {listing.moderation_status === "published"
@@ -214,9 +215,13 @@ export default function ListingManagement({ userId }: { userId: string }) {
                         ? "En attente"
                         : "Refusée"}
                   </span>
-                  <h3>{listing.title}</h3>
-                  <p>{listing.type} · {listing.quartier}, Conakry</p>
-                  <p>{formatListingPrice(listing.price, listing.offerType)} · {listing.surface} m²</p>
+                  <h3>{listing.title || "Annonce sans titre"}</h3>
+                  <p>{listing.type || "Type à préciser"} · {listing.quartier || "Quartier à préciser"}, Conakry</p>
+                  <p>
+                    {formatListingPrice(listing.price, listing.offerType)}
+                    {listing.surface !== null ? ` · ${listing.surface} m²` : ""}
+                    {listing.kitchen ? ` · Cuisine ${formatListingKitchen(listing.kitchen)?.toLowerCase()}` : ""}
+                  </p>
                 </div>
                 <div className={styles.managedListingActions}>
                   <button
@@ -242,11 +247,12 @@ export default function ListingManagement({ userId }: { userId: string }) {
                 <form className={styles.listingManagerForm} onSubmit={handleSave}>
                   <label className={styles.field}>
                     <span>Titre</span>
-                    <input maxLength={140} required value={draft.title} onChange={(event) => updateDraft("title", event.target.value)} />
+                    <input maxLength={140} value={draft.title} onChange={(event) => updateDraft("title", event.target.value)} />
                   </label>
                   <label className={styles.field}>
                     <span>Type de bien</span>
-                    <select required value={draft.type} onChange={(event) => updateDraft("type", event.target.value)}>
+                    <select value={draft.type} onChange={(event) => updateDraft("type", event.target.value)}>
+                      <option value="">Non précisé</option>
                       {PROPERTY_TYPES.filter((type) => type !== "Tous types").map((type) => (
                         <option key={type} value={type}>{type}</option>
                       ))}
@@ -290,7 +296,6 @@ export default function ListingManagement({ userId }: { userId: string }) {
                     <span>Quartier</span>
                     <input
                       list="listing-management-neighborhoods"
-                      required
                       value={draft.quartier}
                       placeholder="Saisir ou choisir un quartier"
                       onChange={(event) => updateDraft("quartier", event.target.value)}
@@ -303,37 +308,63 @@ export default function ListingManagement({ userId }: { userId: string }) {
                   </label>
                   <label className={styles.field}>
                     <span>Prix (GNF)</span>
-                    <input min="1" required type="number" value={draft.price} onChange={(event) => updateDraft("price", Number(event.target.value))} />
+                    <input min="1" type="number" value={draft.price ?? ""} onChange={(event) => updateDraft("price", event.target.value === "" ? null : Number(event.target.value))} />
                   </label>
                   <label className={styles.field}>
                     <span>Priorité d’affichage</span>
-                    <input min="0" step="1" required type="number" value={draft.priority ?? 0} onChange={(event) => updateDraft("priority", Number(event.target.value))} />
+                    <input min="0" step="1" type="number" value={draft.priority ?? 0} onChange={(event) => updateDraft("priority", event.target.value === "" ? 0 : Number(event.target.value))} />
                     <span className={styles.fieldHint}>Plus la valeur est élevée, plus l’annonce apparaît tôt. 0 correspond à la priorité normale.</span>
                   </label>
                   <label className={styles.field}>
                     <span>Surface (m²)</span>
-                    <input min="1" required type="number" value={draft.surface} onChange={(event) => updateDraft("surface", Number(event.target.value))} />
+                    <input min="1" type="number" value={draft.surface ?? ""} onChange={(event) => updateDraft("surface", event.target.value === "" ? null : Number(event.target.value))} />
                   </label>
                   {draft.type !== "Terrain-Vide" && (
                     <>
                       <label className={styles.field}>
                         <span>Nombre de chambres</span>
-                        <input min="0" required type="number" value={draft.bedrooms} onChange={(event) => updateDraft("bedrooms", Number(event.target.value))} />
+                        <input min="0" type="number" value={draft.bedrooms ?? ""} onChange={(event) => updateDraft("bedrooms", event.target.value === "" ? null : Number(event.target.value))} />
                       </label>
                       <label className={styles.field}>
                         <span>Nombre de salons</span>
-                        <input min="0" required type="number" value={draft.livingRooms} onChange={(event) => updateDraft("livingRooms", Number(event.target.value))} />
+                        <input min="0" type="number" value={draft.livingRooms ?? ""} onChange={(event) => updateDraft("livingRooms", event.target.value === "" ? null : Number(event.target.value))} />
                       </label>
                       <label className={styles.field}>
                         <span>Nombre de douches</span>
-                        <input min="0" required type="number" value={draft.showers} onChange={(event) => updateDraft("showers", Number(event.target.value))} />
+                        <input min="0" type="number" value={draft.showers ?? ""} onChange={(event) => updateDraft("showers", event.target.value === "" ? null : Number(event.target.value))} />
                       </label>
                     </>
                   )}
                   <label className={styles.field}>
+                    <span>Cuisine</span>
+                    <select
+                      value={draft.kitchen ?? ""}
+                      onChange={(event) => updateDraft(
+                        "kitchen",
+                        event.target.value
+                          ? event.target.value as "internal" | "external" | "both"
+                          : null,
+                      )}
+                    >
+                      <option value="">Non précisée</option>
+                      <option value="internal">Interne</option>
+                      <option value="external">Externe</option>
+                      <option value="both">Interne et externe</option>
+                    </select>
+                  </label>
+                  <label className={styles.field}>
                     <span>Remplacer la photo (facultatif)</span>
                     <input accept="image/jpeg,image/png,image/webp" type="file" onChange={(event) => setSelectedImage(event.target.files?.[0] ?? null)} />
                   </label>
+                  {draft.image && (
+                    <button
+                      className={styles.rejectButton}
+                      type="button"
+                      onClick={() => updateDraft("image", null)}
+                    >
+                      <X size={15} aria-hidden="true" /> Retirer la photo actuelle
+                    </button>
+                  )}
                   <label className={styles.field}>
                     <span>Description</span>
                     <textarea maxLength={5000} rows={4} value={draft.description} onChange={(event) => updateDraft("description", event.target.value)} />

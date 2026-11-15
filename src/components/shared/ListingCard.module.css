@@ -6,3 +6,53 @@
 .featureBadges::-webkit-scrollbar {
   display: none;
 }
+
+@media (max-width: 600px) {
+  .mobileCompact {
+    --card-heart-size: 27px;
+    --card-heart-offset: 7px;
+    --card-badge-offset: 7px;
+    --card-status-padding: 4px 6px;
+    --card-status-size: 8px;
+    --card-price-padding: 5px 6px;
+    --card-price-size: 10px;
+    --card-body-padding: 9px;
+    --card-title-size: 12px;
+    --card-type-size: 8px;
+    --card-meta-size: 9px;
+    --card-meta-gap: 4px;
+    --card-chips-margin-top: 8px;
+    --card-chips-pad-top: 5px;
+    --card-feature-padding: 3px 4px;
+    --card-feature-size: 8px;
+  }
+
+  .mobileCompact > div:first-child {
+    height: 112px !important;
+  }
+
+  .mobileCompact > a > div {
+    padding: 9px !important;
+  }
+
+  .mobileCompact h3 {
+    line-height: 1.25 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .mobileCompact > a > div > div:nth-child(3) {
+    min-width: 0;
+    margin-top: 4px !important;
+    font-size: 9px !important;
+  }
+
+  .mobileCompact > a > div > div:nth-child(3) span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobileCompact .featureBadges {
+    gap: 3px !important;
+  }
+}

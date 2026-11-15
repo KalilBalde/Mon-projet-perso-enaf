@@ -130,7 +130,7 @@ export function ContactModalProvider({
               style={{
                 margin: "0 0 4px",
                 color: "#0a2e5c",
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontSize: 22,
                 fontWeight: 700,
               }}

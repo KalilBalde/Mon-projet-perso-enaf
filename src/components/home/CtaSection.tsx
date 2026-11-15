@@ -167,7 +167,7 @@ export default function CtaSection() {
           overflow: hidden;
           margin: 0;
           color: #083b73;
-          font-family: "Playfair Display", serif;
+          font-family: "DM Sans", sans-serif;
           font-size: clamp(19px, 2.4vw, 27px);
           line-height: 1.12;
           font-weight: 700;

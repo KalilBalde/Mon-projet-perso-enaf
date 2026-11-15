@@ -166,7 +166,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
               maxWidth: 520,
               margin: 0,
               color: "#fff",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'DM Sans', sans-serif",
               fontSize: "clamp(20px, 5.5vw, 36px)",
               lineHeight: 1.08,
               fontWeight: 700,

@@ -18,11 +18,12 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { LOGO_SRC } from "../../data/constants";
+import { LOGO_SRC, PROFILE_UPDATED_EVENT } from "../../data/constants";
 import { getFavoriteIds } from "../../lib/favorites/storage";
 import {
   getProfile,
   listPendingAgentRequests,
+  type Profile,
 } from "../../lib/profiles/repository";
 import {
   hasPermission,
@@ -53,10 +54,13 @@ export default function AccountModal({
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [pendingAgentCount, setPendingAgentCount] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [accountProfile, setAccountProfile] = useState<Profile | null>(null);
   const firstNames =
-    (user?.user_metadata?.first_names as string | undefined) ?? "";
+    accountProfile?.first_names ||
+    (user?.user_metadata?.first_names as string | undefined) || "";
   const lastName =
-    (user?.user_metadata?.last_name as string | undefined) ?? "";
+    accountProfile?.last_name ||
+    (user?.user_metadata?.last_name as string | undefined) || "";
   const fullName = user?.user_metadata?.full_name as string | undefined;
   const greetingName =
     firstNames.split(/\s+/)[0] || fullName || user?.email || "Membre ENAFIM";
@@ -203,25 +207,33 @@ export default function AccountModal({
   useEffect(() => {
     if (!isOpen || !user) {
       setUserRole(null);
+      setAccountProfile(null);
       return;
     }
 
     let active = true;
+    const refreshProfile = () => {
+      void getProfile(createClient(), user.id)
+        .then((profile) => {
+          if (active) {
+            setAccountProfile(profile);
+            setUserRole(profile?.role ?? null);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setAccountProfile(null);
+            setUserRole(null);
+          }
+        });
+    };
 
-    void getProfile(createClient(), user.id)
-      .then((profile) => {
-        if (active) {
-          setUserRole(profile?.role ?? null);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setUserRole(null);
-        }
-      });
+    refreshProfile();
+    window.addEventListener(PROFILE_UPDATED_EVENT, refreshProfile);
 
     return () => {
       active = false;
+      window.removeEventListener(PROFILE_UPDATED_EVENT, refreshProfile);
     };
   }, [isOpen, user]);
 
@@ -300,19 +312,25 @@ export default function AccountModal({
           >
             <X size={20} aria-hidden="true" />
           </button>
-          <span className={styles.avatar} aria-hidden="true">
-            {initials}
-          </span>
-          <span className={styles.status}>
-            <i /> Connecté
-          </span>
-          {userRole && (
-            <span className={styles.roleBadge}>
-              {USER_ROLE_LABELS[userRole]}
+          <div className={styles.memberIdentity}>
+            <span className={styles.avatar} aria-hidden="true">
+              {initials}
             </span>
-          )}
-          <h1 id="account-dialog-title">Bonjour, {greetingName}</h1>
-          <p>{user.email}</p>
+            <div className={styles.memberIdentityInfo}>
+              <h1 id="account-dialog-title">Bonjour, {greetingName}</h1>
+              <p>{user.email}</p>
+              <div className={styles.memberBadges}>
+                <span className={styles.status}>
+                  <i /> Connecté
+                </span>
+                {userRole && (
+                  <span className={styles.roleBadge}>
+                    {USER_ROLE_LABELS[userRole]}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </header>
       ) : (
         <header className={styles.header}>

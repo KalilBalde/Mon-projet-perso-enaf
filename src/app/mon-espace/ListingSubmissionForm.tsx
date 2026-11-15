@@ -25,15 +25,16 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const initialDraft: ListingDraft = {
   title: "",
   quartier: "",
-  price: 0,
+  price: null,
   offerType: null,
   cardBadge: "new",
-  surface: 0,
-  bedrooms: 0,
-  livingRooms: 0,
-  showers: 0,
-  type: "Appartement",
-  image: "",
+  surface: null,
+  bedrooms: null,
+  livingRooms: null,
+  showers: null,
+  kitchen: null,
+  type: "",
+  image: null,
   description: "",
   features: [],
 };
@@ -119,25 +120,26 @@ export default function ListingSubmissionForm({
     event.preventDefault();
     setFeedback(null);
 
-    if (!selectedImage) {
-      setFeedback({ ok: false, message: "Choisissez une photo principale pour continuer." });
-      return;
-    }
-
     setIsSubmitting(true);
     const supabase = createClient();
-    const uploadedImage = await uploadListingImage(supabase, userId, selectedImage);
+    let uploadedImageUrl: string | null = draft.image;
 
-    if (!uploadedImage.url) {
-      setIsSubmitting(false);
-      setFeedback({
-        ok: false,
-        message:
-          process.env.NODE_ENV === "development"
-            ? `La photo n’a pas pu être envoyée : ${uploadedImage.error ?? "erreur inconnue"}`
-            : "La photo n’a pas pu être envoyée. Vérifiez la connexion et réessayez.",
-      });
-      return;
+    if (selectedImage) {
+      const uploadedImage = await uploadListingImage(supabase, userId, selectedImage);
+
+      if (!uploadedImage.url) {
+        setIsSubmitting(false);
+        setFeedback({
+          ok: false,
+          message:
+            process.env.NODE_ENV === "development"
+              ? `La photo n’a pas pu être envoyée : ${uploadedImage.error ?? "erreur inconnue"}`
+              : "La photo n’a pas pu être envoyée. Vérifiez la connexion et réessayez.",
+        });
+        return;
+      }
+
+      uploadedImageUrl = uploadedImage.url;
     }
 
     const additionalImageUrls: string[] = [];
@@ -159,7 +161,7 @@ export default function ListingSubmissionForm({
 
     const result = await submitListing(supabase, userId, role, {
       ...draft,
-      image: uploadedImage.url,
+      image: uploadedImageUrl,
       additionalImages: additionalImageUrls,
       features: [
         ...selectedAmenities,
@@ -201,7 +203,7 @@ export default function ListingSubmissionForm({
     <section className={styles.submissionSection}>
       <div className={styles.sectionHeading}>
         <span className={styles.sectionEyebrow}>Nouvelle annonce</span>
-        <h2>Présenter un bien</h2>
+        <h2>Ajouter un bien à publier</h2>
         <p>
           {role === "real_estate_agent"
             ? "Votre annonce sera vérifiée par ENAFIM avant sa publication."
@@ -216,7 +218,6 @@ export default function ListingSubmissionForm({
             maxLength={140}
             onChange={(event) => updateDraft("title", event.target.value)}
             placeholder="Ex. Appartement lumineux à Kipé"
-            required
             value={draft.title}
           />
         </label>
@@ -225,9 +226,9 @@ export default function ListingSubmissionForm({
           <span>Type de bien</span>
           <select
             onChange={(event) => updateDraft("type", event.target.value)}
-            required
             value={draft.type}
           >
+            <option value="">Non précisé</option>
             {PROPERTY_TYPES.filter((type) => type !== "Tous types").map((type) => (
               <option key={type} value={type}>{type}</option>
             ))}
@@ -255,7 +256,6 @@ export default function ListingSubmissionForm({
             list="listing-submission-neighborhoods"
             onChange={(event) => updateDraft("quartier", event.target.value)}
             placeholder="Saisir ou choisir un quartier"
-            required
             value={draft.quartier}
           />
           <datalist id="listing-submission-neighborhoods">
@@ -270,10 +270,9 @@ export default function ListingSubmissionForm({
           <input
             inputMode="numeric"
             min="1"
-            onChange={(event) => updateDraft("price", Number(event.target.value))}
-            required
+            onChange={(event) => updateDraft("price", event.target.value === "" ? null : Number(event.target.value))}
             type="number"
-            value={draft.price || ""}
+            value={draft.price ?? ""}
           />
         </label>
 
@@ -281,10 +280,9 @@ export default function ListingSubmissionForm({
           <span>Surface (m²)</span>
           <input
             min="1"
-            onChange={(event) => updateDraft("surface", Number(event.target.value))}
-            required
+            onChange={(event) => updateDraft("surface", event.target.value === "" ? null : Number(event.target.value))}
             type="number"
-            value={draft.surface || ""}
+            value={draft.surface ?? ""}
           />
         </label>
 
@@ -294,34 +292,49 @@ export default function ListingSubmissionForm({
                 <span>Nombre de chambres</span>
               <input
                 min="0"
-                onChange={(event) => updateDraft("bedrooms", Number(event.target.value))}
-                required
+                onChange={(event) => updateDraft("bedrooms", event.target.value === "" ? null : Number(event.target.value))}
                 type="number"
-                value={draft.bedrooms}
+                value={draft.bedrooms ?? ""}
               />
             </label>
             <label className={styles.field}>
                 <span>Nombre de salons</span>
               <input
                 min="0"
-                onChange={(event) => updateDraft("livingRooms", Number(event.target.value))}
-                required
+                onChange={(event) => updateDraft("livingRooms", event.target.value === "" ? null : Number(event.target.value))}
                 type="number"
-                value={draft.livingRooms}
+                value={draft.livingRooms ?? ""}
               />
             </label>
             <label className={styles.field}>
               <span>Nombre de douches</span>
               <input
                 min="0"
-                onChange={(event) => updateDraft("showers", Number(event.target.value))}
-                required
+                onChange={(event) => updateDraft("showers", event.target.value === "" ? null : Number(event.target.value))}
                 type="number"
-                value={draft.showers}
+                value={draft.showers ?? ""}
               />
             </label>
           </>
         )}
+
+        <label className={styles.field}>
+          <span>Cuisine</span>
+          <select
+            onChange={(event) => updateDraft(
+              "kitchen",
+              event.target.value
+                ? event.target.value as "internal" | "external" | "both"
+                : null,
+            )}
+            value={draft.kitchen ?? ""}
+          >
+            <option value="">Non précisée</option>
+            <option value="internal">Interne</option>
+            <option value="external">Externe</option>
+            <option value="both">Interne et externe</option>
+          </select>
+        </label>
 
         <div className={`${styles.field} ${styles.imageField}`}>
           <label htmlFor="listing-image">Photo principale</label>
@@ -333,7 +346,6 @@ export default function ListingSubmissionForm({
               setSelectedImage(event.target.files?.[0] ?? null);
               setFeedback(null);
             }}
-            required
             type="file"
           />
           <p className={styles.fieldHint}>
@@ -409,11 +421,15 @@ export default function ListingSubmissionForm({
           <label className={`${styles.field} ${styles.amenitiesOtherField}`}>
             <span>Préciser d’autres commodités</span>
             <input
+              className={styles.amenitiesOtherInput}
               maxLength={500}
               onChange={(event) => setFeaturesText(event.target.value)}
+              placeholder="Exemple : balcon, parking, gardiennage"
               value={featuresText}
             />
-            <span className={styles.amenitiesExample}>Exemple : étage 2, balcon</span>
+            <span className={styles.amenitiesExample}>
+              Séparez les commodités par des virgules.
+            </span>
           </label>
         </fieldset>
 

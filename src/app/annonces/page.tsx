@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import ListingCard from "../../components/shared/ListingCard";
 import { fetchPublishedListings } from "../../lib/listings/database";
-import { listingRepository } from "../../lib/listings/repository";
+import ListingsCatalog from "../../components/shared/ListingsCatalog";
+
+export const dynamic = "force-dynamic";
 
 export default async function ListingsPage() {
   const databaseListings = await fetchPublishedListings();
-  const listings = listingRepository.findAll({}, databaseListings);
 
   return (
     <main
@@ -46,7 +46,7 @@ export default async function ListingsPage() {
         .all-listings-title {
           margin: 0;
           color: #0a2e5c;
-          font-family: "Playfair Display", serif;
+          font-family: "DM Sans", sans-serif;
           font-size: clamp(28px, 7vw, 46px);
           line-height: 1.1;
         }
@@ -57,6 +57,194 @@ export default async function ListingsPage() {
           color: #718198;
           font-size: 14px;
           line-height: 1.6;
+        }
+
+        .catalog-filter-form {
+          margin-bottom: 22px;
+        }
+
+        .catalog-filter-toolbar {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: start;
+          gap: 10px;
+        }
+
+        .catalog-search-field {
+          display: flex;
+          min-width: 0;
+          min-height: 46px;
+          align-items: center;
+          gap: 9px;
+          padding: 0 13px;
+          border: 1px solid #dce5ef;
+          border-radius: 9px;
+          background: #fff;
+          color: #1a6dd4;
+        }
+
+        .catalog-search-field input {
+          width: 100%;
+          min-width: 0;
+          border: 0;
+          outline: 0;
+          background: transparent;
+          color: #0a2e5c;
+          font: inherit;
+          font-size: 14px;
+        }
+
+        .catalog-search-field input::placeholder {
+          color: #8794a7;
+        }
+
+        .catalog-filter-details {
+          position: relative;
+        }
+
+        .catalog-filter-summary {
+          display: flex;
+          min-height: 46px;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 0 14px;
+          border: 1px solid #dce5ef;
+          border-radius: 9px;
+          background: #fff;
+          color: #0a2e5c;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+          list-style: none;
+          white-space: nowrap;
+        }
+
+        .catalog-filter-summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .catalog-filter-count {
+          display: grid;
+          width: 20px;
+          height: 20px;
+          place-items: center;
+          border-radius: 50%;
+          background: #edf5ff;
+          color: #1a6dd4;
+          font-size: 11px;
+        }
+
+        .catalog-filter-panel {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+          margin-top: 10px;
+          padding: 16px;
+          border: 1px solid #e4eaf0;
+          border-radius: 10px;
+          background: #f8fafc;
+        }
+
+        .catalog-filter-field {
+          display: grid;
+          align-content: start;
+          gap: 6px;
+          min-width: 0;
+          color: #53657b;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .catalog-filter-field input:not([type="checkbox"]),
+        .catalog-filter-field select {
+          width: 100%;
+          min-width: 0;
+          min-height: 40px;
+          padding: 8px 10px;
+          border: 1px solid #dce5ef;
+          border-radius: 7px;
+          background: #fff;
+          color: #0a2e5c;
+          font: inherit;
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        .catalog-filter-range {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .catalog-filter-wide {
+          grid-column: 1 / -1;
+        }
+
+        .catalog-filter-amenities {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .catalog-filter-amenity {
+          display: flex;
+          min-width: 0;
+          min-height: 38px;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 8px;
+          border: 1px solid #dce5ef;
+          border-radius: 7px;
+          background: #fff;
+          color: #53657b;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .catalog-filter-amenity input[type="checkbox"] {
+          flex: 0 0 16px;
+          width: 16px;
+          height: 16px;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          accent-color: #1a6dd4;
+        }
+
+        .catalog-filter-actions {
+          display: flex;
+          grid-column: 1 / -1;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #e4eaf0;
+        }
+
+        .catalog-filter-reset {
+          color: #53657b;
+          font-size: 12px;
+          font-weight: 600;
+          text-decoration: none;
+        }
+
+        .catalog-filter-submit {
+          min-height: 40px;
+          padding: 9px 16px;
+          border: 0;
+          border-radius: 7px;
+          background: #1a6dd4;
+          color: #fff;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .catalog-results-count {
+          margin: 0 0 14px;
+          color: #718198;
+          font-size: 13px;
         }
 
         .all-listings-bottom {
@@ -92,6 +280,10 @@ export default async function ListingsPage() {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 14px;
           }
+
+          .catalog-filter-panel {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
         }
 
         @media (max-width: 600px) {
@@ -115,6 +307,43 @@ export default async function ListingsPage() {
 
           .all-listings-description {
             font-size: 13px;
+          }
+
+          .catalog-filter-form {
+            margin-bottom: 16px;
+          }
+
+          .catalog-filter-toolbar {
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 7px;
+          }
+
+          .catalog-search-field {
+            min-height: 42px;
+            gap: 7px;
+            padding: 0 10px;
+          }
+
+          .catalog-search-field input {
+            font-size: 13px;
+          }
+
+          .catalog-filter-summary {
+            min-height: 42px;
+            gap: 5px;
+            padding: 0 9px;
+            font-size: 12px;
+          }
+
+          .catalog-filter-panel {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 12px;
+          }
+
+          .catalog-filter-field input:not([type="checkbox"]),
+          .catalog-filter-field select {
+            font-size: 12px;
           }
 
           .all-listings-bottom {
@@ -170,55 +399,14 @@ export default async function ListingsPage() {
           </p>
         </div>
 
-        {listings.length > 0 ? (
-          <>
-            <div className="all-listings-grid">
-              {listings.map((listing) => (
-                <div
-                  className="all-listings-item"
-                  key={listing.id}
-                >
-                  <ListingCard listing={listing} />
-                </div>
-              ))}
-            </div>
+        <ListingsCatalog listings={databaseListings} />
 
-            <div className="all-listings-bottom">
-              <Link
-                href="/"
-                className="all-listings-bottom-link"
-              >
-                <ArrowLeft size={17} />
-                Retour à l&apos;accueil
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                padding: "32px 18px",
-                border: "1px solid #e4eaf0",
-                borderRadius: 14,
-                background: "#f7f9fc",
-                color: "#718198",
-                textAlign: "center",
-              }}
-            >
-              Aucune annonce disponible pour le moment.
-            </div>
-
-            <div className="all-listings-bottom">
-              <Link
-                href="/"
-                className="all-listings-bottom-link"
-              >
-                <ArrowLeft size={17} />
-                Retour à l&apos;accueil
-              </Link>
-            </div>
-          </>
-        )}
+        <div className="all-listings-bottom">
+          <Link href="/" className="all-listings-bottom-link">
+            <ArrowLeft size={17} />
+            Retour à l&apos;accueil
+          </Link>
+        </div>
       </div>
     </main>
   );

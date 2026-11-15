@@ -3,24 +3,27 @@
 // ============================================================
 
 export type ListingOfferType = "rent" | "sale";
+export type ListingKitchen = "internal" | "external" | "both";
 export type ListingCardBadge = "new" | "rented" | "sold" | "title_deed";
 
 export interface Listing {
   id: number;
   title: string;
   quartier: string;
-  price: number;
+  price: number | null;
   offerType?: ListingOfferType | null;
-  surface: number;
-  bedrooms: number;
-  livingRooms: number;
-  showers: number;
+  surface: number | null;
+  bedrooms: number | null;
+  livingRooms: number | null;
+  showers: number | null;
+  kitchen?: ListingKitchen | null;
   type: string;
   priority?: number;
+  createdAt?: string;
   status?: "sold" | "rented";
   cardBadge?: ListingCardBadge | null;
   viewCount?: number;
-  image: string;
+  image: string | null;
   images?: string[];
   description?: string;
   features?: string[];

@@ -1,13 +1,19 @@
 /* ─── UTILS : formatage ─── */
 
+import type { ListingKitchen } from "../types";
+
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-GN").format(price) + " GNF";
 }
 
 export function formatListingPrice(
-  price: number,
+  price: number | null,
   offerType?: "rent" | "sale" | null,
 ): string {
+  if (price === null) {
+    return "Prix à préciser";
+  }
+
   const units = [
     { value: 1_000_000_000, singular: "milliard", plural: "milliards" },
     { value: 1_000_000, singular: "million", plural: "millions" },
@@ -27,4 +33,13 @@ export function formatListingPrice(
   const priceLabel = `${formattedAmount} ${unitLabel} GNF`;
 
   return `${priceLabel}${offerType === "rent" ? "/mois" : ""}`;
+}
+
+export function formatListingKitchen(
+  kitchen: ListingKitchen | null | undefined,
+): string | null {
+  if (kitchen === "internal") return "Interne";
+  if (kitchen === "external") return "Externe";
+  if (kitchen === "both") return "Interne et externe";
+  return null;
 }

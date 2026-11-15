@@ -11,9 +11,11 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   LOGO_SRC,
   NAV_LINKS,
+  PROFILE_UPDATED_EVENT,
   RESET_LISTING_FILTERS_EVENT,
 } from "../../data/constants";
 import { createClient } from "../../lib/supabase/client";
+import { getProfile } from "../../lib/profiles/repository";
 import AccountModal from "./AccountModal";
 import { useContactModal } from "../contact/ContactModal";
 
@@ -28,10 +30,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
+  const [profileFirstNames, setProfileFirstNames] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const { openContact } = useContactModal();
 
-  const firstName = currentUser?.user_metadata?.first_names
+  const firstName = (profileFirstNames || currentUser?.user_metadata?.first_names)
     ?.split(/\s+/)[0];
 
   useEffect(() => {
@@ -45,6 +48,36 @@ export default function Navbar() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setProfileFirstNames(null);
+      return;
+    }
+
+    let active = true;
+    const refreshProfileName = () => {
+      void getProfile(createClient(), currentUser.id)
+        .then((profile) => {
+          if (active) {
+            setProfileFirstNames(profile?.first_names?.trim() || null);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setProfileFirstNames(null);
+          }
+        });
+    };
+
+    refreshProfileName();
+    window.addEventListener(PROFILE_UPDATED_EVENT, refreshProfileName);
+
+    return () => {
+      active = false;
+      window.removeEventListener(PROFILE_UPDATED_EVENT, refreshProfileName);
+    };
+  }, [currentUser?.id, currentUser?.user_metadata?.first_names]);
 
   useEffect(() => {
     let active = true;
