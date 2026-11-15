@@ -96,7 +96,7 @@
   max-width: 480px;
   margin: 8px 0 0;
   color: #fff;
-  font-family: "Playfair Display", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(28px, 4vw, 46px);
   line-height: 1.06;
 }
@@ -137,7 +137,7 @@
 .benefitsIntro h2 {
   margin: 7px 0 0;
   color: #0a2e5c;
-  font-family: "Playfair Display", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(25px, 4vw, 38px);
   line-height: 1.08;
 }
@@ -303,7 +303,7 @@
 .contactPanel h2 {
   margin: 6px 0 0;
   color: #fff;
-  font-family: "Playfair Display", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(23px, 4vw, 32px);
   line-height: 1.05;
 }

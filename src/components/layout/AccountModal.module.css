@@ -77,43 +77,64 @@
 
 .memberHeader {
   position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 34px 24px 28px;
+  display: flex;
+  align-items: center;
+  padding: 20px 58px 20px 24px;
   background:
     radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.35), transparent 50%),
     linear-gradient(100deg, #b3cfef 0%, #84aee0 55%, #5f93d0 100%);
   color: #0a2e5c;
-  text-align: center;
+  text-align: left;
+}
+
+.memberIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.memberIdentityInfo {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.memberBadges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .memberHeader h1 {
-  margin-top: 4px;
-  font-family: "Playfair Display", serif;
-  font-size: 28px;
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
 .memberHeader p {
   color: #0f3560;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 .avatar {
   display: grid;
-  width: 68px;
-  height: 68px;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
   place-items: center;
   border: 3px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   background: linear-gradient(145deg, #3a6ea8, #1f4f86);
   box-shadow: 0 6px 16px rgba(10, 46, 92, 0.18);
   color: #fff;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
@@ -329,11 +350,50 @@
   }
 
   .memberHeader {
-    padding: 30px 20px 24px;
+    padding: 16px 48px 16px 14px;
+  }
+
+  .memberIdentity {
+    gap: 10px;
+  }
+
+  .memberIdentityInfo {
+    gap: 4px;
   }
 
   .memberHeader h1 {
-    font-size: 24px;
+    font-size: 18px;
+  }
+
+  .memberHeader p {
+    font-size: 11px;
+  }
+
+  .avatar {
+    flex-basis: 46px;
+    width: 46px;
+    height: 46px;
+    border-width: 2px;
+    font-size: 17px;
+  }
+
+  .status {
+    gap: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .roleBadge {
+    min-height: 22px;
+    padding: 2px 8px;
+    font-size: 10px;
+  }
+
+  .closeButtonMember {
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
   }
 
   .contentMember {

@@ -1,9 +1,17 @@
-import type { Listing } from "../../types";
+import type { Listing, ListingOfferType } from "../../types";
 
 export interface ListingFilters {
   type?: string;
   quartier?: string;
+  offerType?: ListingOfferType;
+  kitchen?: "internal" | "external";
+  budgetMin?: number;
   budgetMax?: number;
+  surfaceMin?: number;
+  surfaceMax?: number;
+  bedroomsMin?: number;
+  showersMin?: number;
+  features?: string[];
   page?: number;
   limit?: number;
 }
@@ -142,6 +150,15 @@ function createListingSlug(listing: Listing): string {
   return `${titleSlug}-${neighborhoodSlug}-${listing.id}`;
 }
 
+function getCreatedAtTimestamp(listing: Listing): number {
+  if (!listing.createdAt) {
+    return 0;
+  }
+
+  const timestamp = Date.parse(listing.createdAt);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 function matchesFilters(
   listing: Listing,
   filters: ListingFilters,
@@ -158,10 +175,36 @@ function matchesFilters(
     neighborhoodMatches === null ||
     neighborhoodMatches.has(normalizedListingNeighborhood);
 
-  const matchesBudget =
-    !filters.budgetMax || listing.price <= filters.budgetMax;
+  const hasBudgetFilter =
+    filters.budgetMin !== undefined || filters.budgetMax !== undefined;
+  const matchesBudget = !hasBudgetFilter || (
+    listing.price !== null &&
+    (filters.budgetMin === undefined || listing.price >= filters.budgetMin) &&
+    (filters.budgetMax === undefined || listing.price <= filters.budgetMax)
+  );
+  const matchesOffer = !filters.offerType || listing.offerType === filters.offerType;
+  const matchesKitchen = !filters.kitchen ||
+    listing.kitchen === filters.kitchen ||
+    listing.kitchen === "both";
+  const hasSurfaceFilter =
+    filters.surfaceMin !== undefined || filters.surfaceMax !== undefined;
+  const matchesSurface = !hasSurfaceFilter || (
+    listing.surface !== null &&
+    (filters.surfaceMin === undefined || listing.surface >= filters.surfaceMin) &&
+    (filters.surfaceMax === undefined || listing.surface <= filters.surfaceMax)
+  );
+  const matchesBedrooms =
+    filters.bedroomsMin === undefined ||
+    (listing.bedrooms !== null && listing.bedrooms >= filters.bedroomsMin);
+  const matchesShowers =
+    filters.showersMin === undefined ||
+    (listing.showers !== null && listing.showers >= filters.showersMin);
+  const matchesFeatures =
+    !filters.features?.length ||
+    filters.features.every((feature) => listing.features?.includes(feature));
 
-  return matchesType && matchesNeighborhood && matchesBudget;
+  return matchesType && matchesNeighborhood && matchesOffer && matchesKitchen && matchesBudget &&
+    matchesSurface && matchesBedrooms && matchesShowers && matchesFeatures;
 }
 
 function paginateListings(
@@ -187,11 +230,14 @@ export const listingRepository: ListingRepository = {
     );
 
     const sortedListings = [...filteredListings].sort((a, b) => {
+      const priorityDifference = (b.priority ?? 0) - (a.priority ?? 0);
+      const creationTimeDifference =
+        getCreatedAtTimestamp(b) - getCreatedAtTimestamp(a);
       const neighborhoodDistance = (neighborhoodMatches?.get(
         normalizeText(a.quartier),
       ) ?? 0) - (neighborhoodMatches?.get(normalizeText(b.quartier)) ?? 0);
 
-      return neighborhoodDistance || (b.priority ?? 0) - (a.priority ?? 0);
+      return priorityDifference || creationTimeDifference || b.id - a.id || neighborhoodDistance;
     });
 
     return paginateListings(

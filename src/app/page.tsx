@@ -218,7 +218,7 @@ export default function HomePage() {
                   margin: 0,
                   overflow: "hidden",
                   color: "#0a2e5c",
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'DM Sans', sans-serif",
                   fontSize: "clamp(22px, 4vw, 38px)",
                   lineHeight: 1.1,
                   fontWeight: 700,

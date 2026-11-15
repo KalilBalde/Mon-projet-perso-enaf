@@ -99,7 +99,8 @@
   }
 
   .item {
-    flex-basis: min(42%, 156px);
+    flex-basis: calc((100vw - 76px) / 2);
+    width: calc((100vw - 76px) / 2);
   }
 
   .arrow {

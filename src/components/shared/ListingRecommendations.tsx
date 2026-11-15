@@ -1,5 +1,6 @@
 import ListingScroller from "./ListingScroller";
 import type { Listing } from "../../types";
+import styles from "./ListingRecommendations.module.css";
 
 interface ListingRecommendationsProps {
   listings: readonly Listing[];
@@ -40,7 +41,7 @@ function getRecommendations(
         score += 1;
       }
 
-      if (currentListing.price > 0) {
+      if (currentListing.price !== null && currentListing.price > 0 && listing.price !== null) {
         const priceDifference =
           Math.abs(listing.price - currentListing.price) / currentListing.price;
 
@@ -75,11 +76,7 @@ export default function ListingRecommendations({
 
   return (
     <section
-      style={{
-        padding: "32px 24px 40px",
-        background: "#f7f9fc",
-        fontFamily: "'DM Sans', sans-serif",
-      }}
+      className={styles.section}
     >
       <div style={{ width: "100%", maxWidth: 1440, margin: "0 auto" }}>
         <div style={{ marginBottom: 18 }}>
@@ -100,7 +97,7 @@ export default function ListingRecommendations({
             style={{
               margin: 0,
               color: "#0a2e5c",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'DM Sans', sans-serif",
               fontSize: "clamp(22px, 4vw, 34px)",
               lineHeight: 1.15,
             }}

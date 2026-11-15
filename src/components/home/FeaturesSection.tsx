@@ -254,7 +254,7 @@ export default function FeaturesSection() {
             style={{
               margin: 0,
               color: "#0a2e5c",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'DM Sans', sans-serif",
               fontSize: "clamp(24px, 4vw, 38px)",
               lineHeight: 1.1,
             }}

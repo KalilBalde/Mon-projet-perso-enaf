@@ -1,6 +1,7 @@
 "use client";
 
 import { Mail, MapPin, Phone } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { LOGO_SRC } from "../../data/constants";
 import { useContactModal } from "../contact/ContactModal";
 
@@ -13,7 +14,12 @@ const FOOTER_LINKS = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
   const { openContact } = useContactModal();
+
+  if (pathname.startsWith("/annonces/") && pathname !== "/annonces/") {
+    return null;
+  }
 
   return (
     <footer
@@ -51,7 +57,7 @@ export default function Footer() {
         }
 
         .compact-footer-wordmark {
-          font-family: 'Playfair Display', serif;
+          font-family: 'DM Sans', sans-serif;
           font-size: 21px;
           font-weight: 700;
           white-space: nowrap;
@@ -115,25 +121,124 @@ export default function Footer() {
         @media (min-width: 851px) {
           .compact-footer-main {
             display: grid;
-            grid-template-columns: 0.55fr auto 1.45fr;
+            grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.45fr) minmax(0, 2.4fr);
             align-items: center;
-            gap: 24px;
+            gap: clamp(8px, 1.2vw, 16px);
             max-width: none;
-            padding: 26px 48px;
+            padding: 16px clamp(20px, 3vw, 40px);
           }
 
           .compact-footer-brand {
             justify-self: start;
+            min-width: 0;
+            gap: 7px;
+          }
+
+          .compact-footer-logo {
+            width: 36px;
+            height: 36px;
+          }
+
+          .compact-footer-wordmark {
+            font-size: clamp(14px, 1.25vw, 18px);
           }
 
           .compact-footer-nav {
-            justify-self: start;
+            justify-self: stretch;
+            min-width: 0;
             flex-wrap: nowrap;
-            gap: 44px;
+            gap: clamp(6px, 0.8vw, 11px);
+          }
+
+          .compact-footer-nav a {
+            font-size: clamp(10px, 0.9vw, 12px);
           }
 
           .compact-footer-contact {
-            justify-self: end;
+            justify-self: stretch;
+            min-width: 0;
+            gap: clamp(4px, 0.6vw, 8px);
+          }
+
+          .compact-footer-contact-item {
+            flex: 1 1 0;
+            min-width: 0;
+            gap: 4px;
+            font-size: clamp(11.5px, 0.92vw, 12.5px);
+            white-space: nowrap;
+          }
+
+          .compact-footer-contact-item:nth-child(2) {
+            flex-grow: 1.3;
+          }
+
+          .compact-footer-contact-item:nth-child(3) {
+            flex-grow: 1.7;
+          }
+
+          .compact-footer-contact a.compact-footer-contact-item,
+          .compact-footer-contact .compact-footer-contact-button {
+            font-size: clamp(11.5px, 0.92vw, 12.5px);
+          }
+
+          .compact-footer-contact-item span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .compact-footer-contact-item svg {
+            width: 14px;
+            height: 14px;
+            flex: 0 0 14px;
+          }
+
+          .compact-footer-contact-button {
+            font: inherit;
+          }
+
+          .compact-footer-bottom {
+            padding-top: 10px;
+            padding-bottom: 10px;
+          }
+        }
+
+        @media (min-width: 851px) and (max-width: 1100px) {
+          .compact-footer-main {
+            grid-template-columns: minmax(140px, 0.8fr) minmax(0, 1.2fr) minmax(0, 2.5fr);
+            gap: 10px;
+            padding-right: 20px;
+            padding-left: 20px;
+          }
+
+          .compact-footer-wordmark {
+            font-size: 15px;
+          }
+
+          .compact-footer-nav {
+            gap: 6px;
+          }
+
+          .compact-footer-nav a {
+            font-size: 11px;
+          }
+
+          .compact-footer-contact {
+            gap: 6px;
+          }
+
+          .compact-footer-contact-item,
+          .compact-footer-contact a.compact-footer-contact-item,
+          .compact-footer-contact .compact-footer-contact-button {
+            gap: 4px;
+            font-size: 11.5px;
+          }
+
+          .compact-footer-contact-item svg {
+            width: 12px;
+            height: 12px;
+            flex-basis: 12px;
           }
         }
 

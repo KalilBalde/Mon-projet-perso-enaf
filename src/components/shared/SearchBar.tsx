@@ -64,11 +64,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const labelStyle: React.CSSProperties = {
     display: "block",
     marginBottom: 4,
-    color: "#7d8da3",
-    fontSize: 9,
+    color: "#53657b",
+    fontSize: 12,
     fontWeight: 700,
-    letterSpacing: "1px",
-    textTransform: "uppercase",
+    letterSpacing: 0,
   };
 
   const controlStyle: React.CSSProperties = {
@@ -76,6 +75,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
+    boxSizing: "border-box",
     minHeight: 42,
     padding: "9px 10px",
     border: "1px solid #dce5ef",
@@ -104,6 +104,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   return (
     <div
+      className="search-bar-container"
       style={{
         position: "relative",
         zIndex: 10,
@@ -114,12 +115,121 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     >
       <style>{`
         @media (max-width: 760px) {
+          .search-bar-inner {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 5px !important;
+          }
+
           .search-bar-inner input {
+            min-width: 0;
+            padding-right: 4px !important;
+            padding-left: 24px !important;
             font-size: 16px !important;
+            line-height: 1.2;
+          }
+
+          .search-bar-inner input::placeholder {
+            font-size: 16px !important;
+          }
+
+          .search-bar-inner .search-bar-budget-input {
+            width: 133.33% !important;
+            padding-left: 32px !important;
+            transform: scaleX(0.75);
+            transform-origin: left center;
+            text-align: left !important;
+          }
+
+          .search-bar-inner .search-bar-neighborhood-input {
+            width: 133.33% !important;
+            padding-left: 32px !important;
+            transform: scaleX(0.75);
+            transform-origin: left center;
+            text-align: left !important;
+          }
+
+          .search-bar-inner .search-bar-budget-input::placeholder,
+          .search-bar-inner .search-bar-neighborhood-input::placeholder {
+            font-size: 16px !important;
+          }
+
+          .search-bar-inner .search-bar-control {
+            min-width: 0;
+            gap: 3px !important;
+            padding-right: 5px !important;
+            padding-left: 5px !important;
+            font-size: 12px !important;
+          }
+
+          .search-bar-label {
+            font-size: 12px !important;
+            letter-spacing: 0 !important;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .search-bar-container {
+            padding-right: 8px !important;
+            padding-left: 8px !important;
+          }
+
+          .search-bar-panel {
+            padding: 8px !important;
+          }
+
+          .search-bar-inner {
+            gap: 4px !important;
+          }
+
+          .search-bar-inner input {
+            min-height: 38px !important;
+            padding: 7px 3px 7px 22px !important;
+            font-size: 16px !important;
+          }
+
+          .search-bar-inner .search-bar-budget-input {
+            padding-left: 26px !important;
+          }
+
+          .search-bar-inner .search-bar-neighborhood-input {
+            padding-left: 26px !important;
+          }
+
+          .search-bar-inner input::placeholder {
+            font-size: 10px !important;
+          }
+
+          .search-bar-inner .search-bar-budget-input::placeholder,
+          .search-bar-inner .search-bar-neighborhood-input::placeholder {
+            font-size: 16px !important;
+          }
+
+          .search-bar-inner .search-bar-control {
+            min-height: 38px !important;
+            gap: 2px !important;
+            padding-right: 4px !important;
+            padding-left: 4px !important;
+            font-size: 12px !important;
+          }
+
+          .search-bar-inner .search-bar-control svg {
+            width: 12px;
+            height: 12px;
+          }
+
+          .search-bar-inner .search-bar-label {
+            margin-bottom: 3px !important;
+            font-size: 12px !important;
+            letter-spacing: 0 !important;
+          }
+
+          .search-bar-icon {
+            left: 7px !important;
           }
         }
       `}</style>
       <div
+        className="search-bar-panel"
         style={{
           padding: 11,
           border: "1px solid #e6edf5",
@@ -137,11 +247,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               gap: 7,
             }}
           >
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Type de bien</label>
+          <div className="search-bar-field" style={fieldStyle}>
+            <label className="search-bar-label" style={labelStyle}>Type de bien</label>
 
             <button
               type="button"
+              className="search-bar-control"
               style={controlStyle}
               onClick={() =>
                 setActiveDropdown(
@@ -211,10 +322,11 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             )}
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Quartier</label>
+          <div className="search-bar-field" style={fieldStyle}>
+            <label className="search-bar-label" style={labelStyle}>Quartier</label>
             <div style={{ position: "relative" }}>
               <MapPin
+                className="search-bar-icon"
                 size={14}
                 color="#1a6dd4"
                 style={{
@@ -226,9 +338,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 }}
               />
               <input
+                className="search-bar-neighborhood-input"
                 type="text"
                 enterKeyHint="search"
-                placeholder="Tous les quartiers"
+                placeholder="Ex: Kagbelen"
                 value={filters.quartier}
                 autoComplete="off"
                 role="combobox"
@@ -285,11 +398,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             </div>
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Budget maximum</label>
+          <div className="search-bar-field search-bar-field-budget" style={fieldStyle}>
+            <label className="search-bar-label" style={labelStyle}>Budget max.</label>
 
             <div style={{ position: "relative" }}>
               <TrendingUp
+                className="search-bar-icon"
                 size={14}
                 color="#1a6dd4"
                 style={{
@@ -301,6 +415,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               />
 
               <input
+                className="search-bar-budget-input"
                 type="text"
                 inputMode="numeric"
                 enterKeyHint="search"

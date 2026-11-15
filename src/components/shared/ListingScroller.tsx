@@ -93,13 +93,11 @@ export default function ListingScroller({
             className={styles.item}
             style={{
               display: "flex",
-              flex: "0 0 min(38vw, 262px)",
-              width: "min(38vw, 262px)",
               minWidth: 0,
               scrollSnapAlign: "start",
             }}
           >
-            <ListingCard listing={listing} compact />
+            <ListingCard listing={listing} compact mobileCompact />
           </div>
         ))}
       </div>

@@ -199,7 +199,7 @@
 
 .hero h1 {
   margin-top: 9px;
-  font-family: "Playfair Display", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(26px, 4vw, 38px);
   font-weight: 700;
   line-height: 1.15;
@@ -638,7 +638,7 @@
 .sectionHeading h2 {
   margin-top: 6px;
   color: #0a2e5c;
-  font-family: "Playfair Display", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(24px, 4vw, 34px);
   font-weight: 700;
   line-height: 1.2;
@@ -1111,6 +1111,15 @@
   margin-top: 10px;
 }
 
+.listingForm input::placeholder,
+.listingForm textarea::placeholder {
+  color: #8794a7;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 400;
+  opacity: 1;
+}
+
 .amenitiesExample {
   color: #8794a7;
   font-size: 10px;
@@ -1211,6 +1220,45 @@
 
 .submissionSection {
   width: min(100%, 900px);
+}
+
+.submissionSection .sectionHeading h2 {
+  color: #0a2e5c;
+  font-family: "DM Sans", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.submissionSection .sectionHeading p {
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.submissionSection .field {
+  color: #53657b;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.submissionSection .amenitiesFieldset legend {
+  color: #53657b;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.submissionSection .listingForm input:not([type="file"]),
+.submissionSection .listingForm select,
+.submissionSection .listingForm textarea {
+  color: #0a2e5c;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .listingForm {

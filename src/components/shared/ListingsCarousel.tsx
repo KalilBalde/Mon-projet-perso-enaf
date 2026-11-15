@@ -17,6 +17,8 @@ interface ListingColumn {
 
 const DESKTOP_VISIBLE_COLUMNS = 4;
 const DESKTOP_CARDS_PER_COLUMN = 2;
+const MIN_LISTINGS_FOR_DESKTOP_CAROUSEL =
+  (DESKTOP_VISIBLE_COLUMNS + 1) * DESKTOP_CARDS_PER_COLUMN;
 
 function getCircularListing(listings: Listing[], index: number): Listing {
   const safeIndex = ((index % listings.length) + listings.length) % listings.length;
@@ -60,7 +62,9 @@ export default function ListingsCarousel({
     );
   }
 
-  const showDesktopCarousel = !isFiltered;
+  const showDesktopCarousel =
+    !isFiltered && listings.length >= MIN_LISTINGS_FOR_DESKTOP_CAROUSEL;
+  const showStaticGrid = !showDesktopCarousel;
   const visibleColumns = showDesktopCarousel
     ? getVisibleColumns(listings, desktopCardIndex)
     : [];
@@ -109,7 +113,7 @@ export default function ListingsCarousel({
 
   return (
     <div
-      className={`listings-carousel${isFiltered ? " listings-carousel-filtered" : ""}`}
+      className={`listings-carousel${showStaticGrid ? " listings-carousel-filtered" : ""}`}
     >
       <style suppressHydrationWarning>{`
         .listings-carousel {
@@ -250,10 +254,10 @@ export default function ListingsCarousel({
       `}</style>
 
       <div
-        className={`desktop-listings-view${isFiltered ? " desktop-listings-view-filtered" : ""}`}
-        style={isFiltered && listings.length <= 4 ? {
-          gridTemplateColumns: `repeat(${listings.length}, minmax(0, 1fr))`,
-          maxWidth: `min(100%, ${listings.length * 320}px)`,
+        className={`desktop-listings-view${showStaticGrid ? " desktop-listings-view-filtered" : ""}`}
+        style={showStaticGrid ? {
+          gridTemplateColumns: `repeat(${Math.min(listings.length, 4)}, minmax(0, 1fr))`,
+          maxWidth: `min(100%, ${Math.min(listings.length, 4) * 320}px)`,
         } : undefined}
       >
         {showDesktopCarousel

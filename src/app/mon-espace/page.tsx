@@ -61,6 +61,7 @@ import SignOutButton from "./SignOutButton";
 import styles from "./dashboard.module.css";
 import { useContactModal } from "../../components/contact/ContactModal";
 import { formatListingPrice } from "../../utils/format";
+import { LISTING_IMAGE_PLACEHOLDER, PROFILE_UPDATED_EVENT } from "../../data/constants";
 
 type AccountSection =
   | "favorites"
@@ -89,7 +90,6 @@ const TABS: { id: AccountSection; label: string; Icon: LucideIcon }[] = [
 // Heavily blurred, so a small copy of a site photo is enough.
 const BACKDROP_SRC =
   "https://images.unsplash.com/photo-1460317442991-0ec209397118?w=960&h=640&fit=crop&q=50";
-
 const AGENCY_MESSAGE =
   "Bonjour ENAFIM Guinée, je vous contacte depuis mon espace personnel.";
 
@@ -407,16 +407,32 @@ export default function AccountPage() {
     setIsSavingProfile(true);
     setProfileFeedback(null);
 
-    const updatedProfile = await updateProfile(createClient(), user.id, {
+    const supabase = createClient();
+    const updates = {
       first_names: profileDraft.first_names.trim().replace(/\s+/g, " "),
       last_name: profileDraft.last_name.trim(),
       phone: profileDraft.phone.trim(),
-    });
+    };
+    const updatedProfile = await updateProfile(supabase, user.id, updates);
 
     if (updatedProfile) {
+      const { error: authUpdateError } = await supabase.auth.updateUser({
+        data: {
+          first_names: updatedProfile.first_names,
+          last_name: updatedProfile.last_name,
+          full_name: `${updatedProfile.first_names} ${updatedProfile.last_name}`.trim(),
+          phone: updatedProfile.phone,
+        },
+      });
+      window.dispatchEvent(new Event(PROFILE_UPDATED_EVENT));
       setProfile(updatedProfile);
       setIsEditingProfile(false);
-      setProfileFeedback({ ok: true, text: "Votre profil a été mis à jour." });
+      setProfileFeedback({
+        ok: !authUpdateError,
+        text: authUpdateError
+          ? "Profil enregistré, mais le prénom du header n’a pas pu être synchronisé. Rechargez la page."
+          : "Votre profil a été mis à jour.",
+      });
     } else {
       setProfileFeedback({
         ok: false,
@@ -999,10 +1015,10 @@ export default function AccountPage() {
                     <div className={styles.ownerListingList}>
                       {myListings.map((listing) => (
                         <article key={listing.id} className={styles.ownerListing}>
-                          <img src={listing.image} alt="" />
+                          <img src={listing.image ?? LISTING_IMAGE_PLACEHOLDER} alt="" />
                           <div className={styles.ownerListingInfo}>
-                            <h3>{listing.title}</h3>
-                            <p>{listing.quartier}, Conakry · {formatListingPrice(listing.price, listing.offerType)}</p>
+                            <h3>{listing.title || "Annonce sans titre"}</h3>
+                            <p>{listing.quartier || "Quartier à préciser"}, Conakry · {formatListingPrice(listing.price, listing.offerType)}</p>
                           </div>
                           <span className={`${styles.moderationBadge} ${styles[`moderation_${listing.moderation_status}`]}`}>
                             {listing.moderation_status === "published"
@@ -1043,12 +1059,16 @@ export default function AccountPage() {
                     <div className={styles.listingReviewList}>
                       {pendingListings.map((listing) => (
                         <article key={listing.id} className={styles.listingReviewItem}>
-                          <img src={listing.image} alt="" />
+                          <img src={listing.image ?? LISTING_IMAGE_PLACEHOLDER} alt="" />
                           <div className={styles.listingReviewInfo}>
                             <span className={styles.moderationBadge}>À valider</span>
-                            <h3>{listing.title}</h3>
-                            <p>{listing.type} · {listing.quartier}, Conakry</p>
-                            <p>{formatListingPrice(listing.price, listing.offerType)} · {listing.surface} m² · {listing.bedrooms} chambre(s)</p>
+                            <h3>{listing.title || "Annonce sans titre"}</h3>
+                            <p>{listing.type || "Type à préciser"} · {listing.quartier || "Quartier à préciser"}, Conakry</p>
+                            <p>
+                              {formatListingPrice(listing.price, listing.offerType)}
+                              {listing.surface !== null ? ` · ${listing.surface} m²` : ""}
+                              {listing.bedrooms !== null ? ` · ${listing.bedrooms} chambre(s)` : ""}
+                            </p>
                           </div>
                           <div className={styles.requestActions}>
                             <button

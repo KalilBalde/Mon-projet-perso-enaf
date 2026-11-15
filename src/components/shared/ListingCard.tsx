@@ -9,21 +9,22 @@ import { useEffect, useRef, useState } from "react";
 import {
   Bath,
   BedDouble,
+  CookingPot,
   Eye,
   Heart,
   LandPlot,
   MapPin,
   Maximize,
+  Share2,
   Sofa,
+  Check,
 } from "lucide-react";
 import type { Listing } from "../../types";
+import { LISTING_IMAGE_PLACEHOLDER } from "../../data/constants";
 import { getFavoriteIds, toggleFavorite } from "../../lib/favorites/storage";
 import { listingRepository } from "../../lib/listings/repository";
-import { formatListingPrice } from "../../utils/format";
+import { formatListingKitchen, formatListingPrice } from "../../utils/format";
 import styles from "./ListingCard.module.css";
-
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&h=600&fit=crop";
 
 interface StatusBadge {
   label: string;
@@ -70,7 +71,10 @@ function getStatusBadge(listing: Listing): StatusBadge | null {
 function getUniqueListingImages(listing: Listing): string[] {
   const images = new Map<string, string>();
 
-  for (const image of [listing.image, ...(listing.images ?? [])]) {
+  for (const image of [
+    ...(listing.image ? [listing.image] : []),
+    ...(listing.images ?? []),
+  ]) {
     try {
       const url = new URL(image);
       const identity = `${url.origin}${url.pathname}`;
@@ -88,15 +92,41 @@ function getUniqueListingImages(listing: Listing): string[] {
   return [...images.values()];
 }
 
+function copyTextWithFallback(text: string): boolean {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.top = "0";
+  textArea.style.left = "-9999px";
+  textArea.style.fontSize = "16px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  textArea.setSelectionRange(0, text.length);
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } finally {
+    textArea.remove();
+  }
+
+  return copied;
+}
+
 export default function ListingCard({
   listing,
   compact = false,
+  mobileCompact = false,
 }: {
   listing: Listing;
   compact?: boolean;
+  mobileCompact?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const imageTouchStartXRef = useRef<number | null>(null);
   const ignoreImageClickUntilRef = useRef(0);
@@ -106,15 +136,34 @@ export default function ListingCard({
   }, [listing.id]);
 
   const isTerrain = listing.type === "Terrain-Vide";
+  const listingTitle = listing.title.trim() || "Annonce sans titre";
+  const listingType = listing.type.trim() || "Type à préciser";
+  const listingNeighborhood = listing.quartier.trim() || "Quartier à préciser";
   const statusBadge = getStatusBadge(listing);
   const listingSlug = listingRepository.getSlug(listing);
   const listingImages = getUniqueListingImages(listing);
+  const listingUrl = `/annonces/${listingSlug}`;
   const offerLabel =
     listing.offerType === "rent"
       ? "À louer"
       : listing.offerType === "sale"
         ? "À vendre"
         : null;
+
+  const handleCopyListingLink = async () => {
+    const url = new URL(listingUrl, window.location.origin).toString();
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+
+      await navigator.clipboard.writeText(url);
+      setShareStatus("copied");
+    } catch {
+      setShareStatus(copyTextWithFallback(url) ? "copied" : "error");
+    }
+  };
 
     const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
       event.stopPropagation();
@@ -147,7 +196,10 @@ export default function ListingCard({
 
   return (
     <article
-      className={compact ? styles.compact : undefined}
+      className={[
+        compact ? styles.compact : "",
+        mobileCompact ? styles.mobileCompact : "",
+      ].filter(Boolean).join(" ") || undefined}
       style={{
         position: "relative",
         display: "flex",
@@ -185,7 +237,7 @@ export default function ListingCard({
       >
         <Link
           href={`/annonces/${listingSlug}`}
-          aria-label={`Voir l’annonce ${listing.title}`}
+          aria-label={`Voir l’annonce ${listingTitle}`}
           onClick={(event) => {
             if (Date.now() < ignoreImageClickUntilRef.current) {
               event.preventDefault();
@@ -201,12 +253,12 @@ export default function ListingCard({
           }}
         >
           <img
-            src={listingImages[activeImageIndex] ?? FALLBACK_IMAGE}
-            alt={`${listing.title} - photo ${activeImageIndex + 1}`}
+            src={listingImages[activeImageIndex] ?? LISTING_IMAGE_PLACEHOLDER}
+            alt={`${listingTitle} - photo ${activeImageIndex + 1}`}
             loading="lazy"
             onError={(event) => {
               event.currentTarget.onerror = null;
-              event.currentTarget.src = FALLBACK_IMAGE;
+              event.currentTarget.src = LISTING_IMAGE_PLACEHOLDER;
             }}
             style={{
               display: "block",
@@ -339,7 +391,7 @@ export default function ListingCard({
               WebkitLineClamp: compact ? 1 : 2,
             }}
           >
-            {listing.title}
+            {listingTitle}
           </h3>
 
           <div
@@ -370,7 +422,7 @@ export default function ListingCard({
                 whiteSpace: "nowrap",
               }}
             >
-              {listing.type}{offerLabel ? ` · ${offerLabel}` : ""}
+              {listingType}{offerLabel ? ` · ${offerLabel}` : ""}
             </span>
 
             <span
@@ -398,13 +450,14 @@ export default function ListingCard({
               alignItems: "center",
               gap: 5,
               marginTop: "var(--card-meta-gap, 7px)",
-              color: "#7d8da3",
+              color: "#4d6279",
               fontSize: "var(--card-meta-size, 12px)",
+              fontWeight: 600,
               whiteSpace: "nowrap",
             }}
           >
             <MapPin size={13} color="#1a6dd4" />
-            <span>{listing.quartier}, Conakry</span>
+            <span>{listingNeighborhood}, Conakry</span>
           </div>
 
           <div
@@ -420,32 +473,39 @@ export default function ListingCard({
               borderTop: "1px solid #eef2f6",
             }}
           >
-            <FeatureBadge
+            {listing.surface !== null && <FeatureBadge
               icon={<Maximize size={13} />}
               label={`${listing.surface} m²`}
-            />
+            />}
 
-            {!isTerrain && listing.bedrooms > 0 && (
+            {!isTerrain && listing.bedrooms !== null && listing.bedrooms > 0 && (
               <FeatureBadge
                 icon={<BedDouble size={13} />}
                 label={`${listing.bedrooms} chambre${listing.bedrooms > 1 ? "s" : ""}`}
               />
             )}
 
-            {!isTerrain && listing.livingRooms > 0 && (
+            {!isTerrain && listing.livingRooms !== null && listing.livingRooms > 0 && (
               <FeatureBadge
                 icon={<Sofa size={13} />}
                 label={`${listing.livingRooms} salon${listing.livingRooms > 1 ? "s" : ""}`}
               />
             )}
 
-            {!isTerrain && listing.showers > 0 && (
+            {!isTerrain && listing.showers !== null && listing.showers > 0 && (
               <span className={styles.extraChip}>
                 <FeatureBadge
                   icon={<Bath size={13} />}
                   label={`${listing.showers} douche${listing.showers > 1 ? "s" : ""}`}
                 />
               </span>
+            )}
+
+            {listing.kitchen && (
+              <FeatureBadge
+                icon={<CookingPot size={13} />}
+                label={`Cuisine ${formatListingKitchen(listing.kitchen)?.toLowerCase()}`}
+              />
             )}
 
             {isTerrain && (
@@ -461,9 +521,49 @@ export default function ListingCard({
       <button
         type="button"
         aria-label={
+          shareStatus === "copied"
+            ? "Lien de l’annonce copié"
+            : shareStatus === "error"
+              ? "Impossible de copier le lien de l’annonce"
+              : `Copier le lien de ${listingTitle}`
+        }
+        title={
+          shareStatus === "copied"
+            ? "Lien copié"
+            : shareStatus === "error"
+              ? "Copie impossible"
+              : "Copier le lien de l’annonce"
+        }
+        onClick={() => void handleCopyListingLink()}
+        style={{
+          position: "absolute",
+          top: "calc(var(--card-heart-offset, 10px) + var(--card-heart-size, 34px) + 8px)",
+          right: "var(--card-heart-offset, 10px)",
+          zIndex: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "var(--card-heart-size, 34px)",
+          height: "var(--card-heart-size, 34px)",
+          padding: 0,
+          border: "none",
+          borderRadius: 9,
+          background: "rgba(255,255,255,0.94)",
+          color: shareStatus === "error" ? "#c0392b" : "#1a6dd4",
+          cursor: "pointer",
+        }}
+      >
+        {shareStatus === "copied"
+          ? <Check size={16} aria-hidden="true" />
+          : <Share2 size={16} aria-hidden="true" />}
+      </button>
+
+      <button
+        type="button"
+        aria-label={
           isFavorite
-            ? `Retirer ${listing.title} des favoris`
-            : `Ajouter ${listing.title} aux favoris`
+            ? `Retirer ${listingTitle} des favoris`
+            : `Ajouter ${listingTitle} aux favoris`
         }
         onClick={() => setIsFavorite(toggleFavorite(listing.id))}
         style={{
