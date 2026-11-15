@@ -478,21 +478,21 @@ export default function ListingCard({
               label={`${listing.surface} m²`}
             />}
 
-            {!isTerrain && listing.bedrooms > 0 && (
+            {!isTerrain && listing.bedrooms !== null && listing.bedrooms > 0 && (
               <FeatureBadge
                 icon={<BedDouble size={13} />}
                 label={`${listing.bedrooms} chambre${listing.bedrooms > 1 ? "s" : ""}`}
               />
             )}
 
-            {!isTerrain && listing.livingRooms > 0 && (
+            {!isTerrain && listing.livingRooms !== null && listing.livingRooms > 0 && (
               <FeatureBadge
                 icon={<Sofa size={13} />}
                 label={`${listing.livingRooms} salon${listing.livingRooms > 1 ? "s" : ""}`}
               />
             )}
 
-            {!isTerrain && listing.showers > 0 && (
+            {!isTerrain && listing.showers !== null && listing.showers > 0 && (
               <span className={styles.extraChip}>
                 <FeatureBadge
                   icon={<Bath size={13} />}

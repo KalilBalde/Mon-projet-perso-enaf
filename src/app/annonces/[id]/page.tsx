@@ -1193,17 +1193,17 @@ export default function ListingDetailsPage({
                   <Maximize size={13} color="#1a6dd4" /> {listing.surface} m²
                 </span>
               )}
-              {!isTerrain && listing.bedrooms > 0 && (
+              {!isTerrain && listing.bedrooms !== null && listing.bedrooms > 0 && (
                 <span className="listing-detail-fact">
                   <BedDouble size={13} color="#1a6dd4" /> {listing.bedrooms} chambre(s)
                 </span>
               )}
-              {!isTerrain && listing.livingRooms > 0 && (
+              {!isTerrain && listing.livingRooms !== null && listing.livingRooms > 0 && (
                 <span className="listing-detail-fact">
                   <Sofa size={13} color="#1a6dd4" /> {listing.livingRooms} salon(s)
                 </span>
               )}
-              {!isTerrain && listing.showers > 0 && (
+              {!isTerrain && listing.showers !== null && listing.showers > 0 && (
                 <span className="listing-detail-fact">
                   <Bath size={13} color="#1a6dd4" /> {listing.showers} douche(s)
                 </span>
