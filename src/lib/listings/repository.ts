@@ -23,8 +23,8 @@ export interface ListingRepository {
   getSlug(listing: Listing): string;
 }
 
-function normalizeText(value: string): string {
-  return value
+function normalizeText(value: string | null | undefined): string {
+  return (value ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
