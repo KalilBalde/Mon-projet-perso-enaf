@@ -19,7 +19,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { LOGO_SRC, PROFILE_UPDATED_EVENT } from "../../data/constants";
-import { getFavoriteIds } from "../../lib/favorites/storage";
+import { useFavorites } from "../favorites/FavoritesProvider";
+import { fetchPublishedListings } from "../../lib/listings/database";
 import {
   getProfile,
   listPendingAgentRequests,
@@ -40,18 +41,21 @@ export default function AccountModal({
   onClose,
   user,
   authReady,
+  prompt = "default",
 }: {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
   authReady: boolean;
+  prompt?: "default" | "favorites";
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
   const { openContact } = useContactModal();
+  const { favoriteIds } = useFavorites();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
-  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [publishedListingIds, setPublishedListingIds] = useState<number[] | null>(null);
   const [pendingAgentCount, setPendingAgentCount] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [accountProfile, setAccountProfile] = useState<Profile | null>(null);
@@ -68,6 +72,9 @@ export default function AccountModal({
     `${firstNames.charAt(0)}${lastName.charAt(0)}`.toUpperCase() ||
     user?.email?.charAt(0).toUpperCase() ||
     "E";
+  const favoritesCount = publishedListingIds
+    ? favoriteIds.filter((listingId) => publishedListingIds.includes(listingId)).length
+    : 0;
 
   const openAccountSection = (
     section:
@@ -199,9 +206,20 @@ export default function AccountModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      setFavoritesCount(getFavoriteIds().length);
+    if (!isOpen) {
+      setPublishedListingIds(null);
+      return;
     }
+
+    let active = true;
+    void fetchPublishedListings().then((listings) => {
+      if (!active) return;
+      setPublishedListingIds(listings.map((listing) => listing.id));
+    });
+
+    return () => {
+      active = false;
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -402,6 +420,7 @@ export default function AccountModal({
             confirmationError={false}
             onAuthenticated={onClose}
             variant="modal"
+            intent={prompt}
           />
         )}
       </div>

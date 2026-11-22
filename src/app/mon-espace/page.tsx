@@ -47,10 +47,7 @@ import {
   type ListingDraft,
   type ListingSubmission,
 } from "../../lib/listings/database";
-import {
-  FAVORITES_CHANGED_EVENT,
-  getFavoriteIds,
-} from "../../lib/favorites/storage";
+import { useFavorites } from "../../components/favorites/FavoritesProvider";
 import { listingRepository } from "../../lib/listings/repository";
 import type { Listing } from "../../types";
 import ListingScroller from "../../components/shared/ListingScroller";
@@ -94,6 +91,7 @@ const AGENCY_MESSAGE =
   "Bonjour ENAFIM Guinée, je vous contacte depuis mon espace personnel.";
 
 export default function AccountPage() {
+  const { favoriteIds } = useFavorites();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabasePublishableKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -102,6 +100,7 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [databaseListings, setDatabaseListings] = useState<Listing[]>([]);
   const [myListings, setMyListings] = useState<ListingSubmission[]>([]);
+  const [myListingIdSearch, setMyListingIdSearch] = useState("");
   const [pendingListings, setPendingListings] = useState<ListingSubmission[]>([]);
   const [profileDraft, setProfileDraft] = useState({
     first_names: "",
@@ -375,27 +374,13 @@ export default function AccountPage() {
   }, [profile]);
 
   useEffect(() => {
-    const refreshFavorites = () => {
-      // Ids are stored oldest first, so reverse to show the latest like first.
-      const currentListings = getFavoriteIds()
-        .reverse()
-        .map((listingId) =>
-          listingRepository.findById(listingId, databaseListings),
-        )
-        .filter((listing): listing is Listing => Boolean(listing));
+    const currentListings = [...favoriteIds]
+      .reverse()
+      .map((listingId) => listingRepository.findById(listingId, databaseListings))
+      .filter((listing): listing is Listing => Boolean(listing));
 
-      setFavoriteListings(currentListings);
-    };
-
-    refreshFavorites();
-    window.addEventListener(FAVORITES_CHANGED_EVENT, refreshFavorites);
-    window.addEventListener("storage", refreshFavorites);
-
-    return () => {
-      window.removeEventListener(FAVORITES_CHANGED_EVENT, refreshFavorites);
-      window.removeEventListener("storage", refreshFavorites);
-    };
-  }, [databaseListings]);
+    setFavoriteListings(currentListings);
+  }, [databaseListings, favoriteIds]);
 
   const handleProfileSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -709,6 +694,11 @@ export default function AccountPage() {
     .findAll({ limit: 12 }, databaseListings)
     .filter((listing) => !listing.status)
     .slice(0, 10);
+  const filteredMyListings = myListings.filter((listing) =>
+    (listing.referenceId ?? "")
+      .toLowerCase()
+      .includes(myListingIdSearch.trim().toLowerCase()),
+  );
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.id === "agent_requests") {
@@ -1009,16 +999,28 @@ export default function AccountPage() {
                       <p>Consultez ici leur état de publication.</p>
                     </div>
                   </div>
+                  <div className={styles.accountSearch}>
+                    <SearchIcon size={18} aria-hidden="true" />
+                    <input
+                      aria-label="Rechercher une annonce par ID"
+                      placeholder="Rechercher par ID d’annonce"
+                      value={myListingIdSearch}
+                      onChange={(event) => setMyListingIdSearch(event.target.value)}
+                    />
+                  </div>
                   {isLoadingMyListings ? (
                     <p className={styles.accountLoading}>Chargement de vos annonces...</p>
-                  ) : myListings.length ? (
+                  ) : filteredMyListings.length ? (
                     <div className={styles.ownerListingList}>
-                      {myListings.map((listing) => (
+                      {filteredMyListings.map((listing) => (
                         <article key={listing.id} className={styles.ownerListing}>
                           <img src={listing.image ?? LISTING_IMAGE_PLACEHOLDER} alt="" />
                           <div className={styles.ownerListingInfo}>
                             <h3>{listing.title || "Annonce sans titre"}</h3>
                             <p>{listing.quartier || "Quartier à préciser"}, Conakry · {formatListingPrice(listing.price, listing.offerType)}</p>
+                            {listing.referenceId && (
+                              <p>ID : {listing.referenceId}</p>
+                            )}
                           </div>
                           <span className={`${styles.moderationBadge} ${styles[`moderation_${listing.moderation_status}`]}`}>
                             {listing.moderation_status === "published"
@@ -1029,6 +1031,10 @@ export default function AccountPage() {
                           </span>
                         </article>
                       ))}
+                    </div>
+                  ) : myListings.length ? (
+                    <div className={styles.emptyRequestQueue}>
+                      Aucune annonce ne correspond à cet ID.
                     </div>
                   ) : (
                     <div className={styles.emptyRequestQueue}>

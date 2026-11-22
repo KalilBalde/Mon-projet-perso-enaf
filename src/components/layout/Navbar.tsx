@@ -5,12 +5,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Info, Menu, Phone, User, Wrench, X } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   LOGO_SRC,
   NAV_LINKS,
+  FAVORITE_RETURN_KEY,
+  OPEN_ACCOUNT_MODAL_EVENT,
   PROFILE_UPDATED_EVENT,
   RESET_LISTING_FILTERS_EVENT,
 } from "../../data/constants";
@@ -26,9 +29,11 @@ const MOBILE_NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [accountPrompt, setAccountPrompt] = useState<"default" | "favorites">("default");
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [profileFirstNames, setProfileFirstNames] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -36,6 +41,49 @@ export default function Navbar() {
 
   const firstName = (profileFirstNames || currentUser?.user_metadata?.first_names)
     ?.split(/\s+/)[0];
+
+  const restoreFavoriteReturn = () => {
+    let returnLocation: { href?: string; scrollY?: number } | null = null;
+    try {
+      const saved = window.sessionStorage.getItem(FAVORITE_RETURN_KEY);
+      returnLocation = saved ? JSON.parse(saved) : null;
+    } catch {
+      returnLocation = null;
+    }
+
+    if (!returnLocation?.href) return;
+
+    const destination = new URL(returnLocation.href, window.location.origin);
+    if (destination.origin !== window.location.origin) {
+      window.sessionStorage.removeItem(FAVORITE_RETURN_KEY);
+      return;
+    }
+
+    const target = `${destination.pathname}${destination.search}${destination.hash}`;
+    const scrollY = Math.max(0, Number(returnLocation.scrollY) || 0);
+
+    window.setTimeout(() => {
+      const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (current !== target) {
+        router.replace(target, { scroll: false });
+      }
+
+      window.setTimeout(() => {
+        window.scrollTo({ top: scrollY, behavior: "auto" });
+        window.sessionStorage.removeItem(FAVORITE_RETURN_KEY);
+      }, 180);
+    }, 250);
+  };
+
+  useEffect(() => {
+    const openAccountModal = (event: Event) => {
+      const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
+      setAccountPrompt(reason === "favorites" ? "favorites" : "default");
+      setAccountOpen(true);
+    };
+    window.addEventListener(OPEN_ACCOUNT_MODAL_EVENT, openAccountModal);
+    return () => window.removeEventListener(OPEN_ACCOUNT_MODAL_EVENT, openAccountModal);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,10 +134,13 @@ export default function Navbar() {
       const supabase = createClient();
       const {
         data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      } = supabase.auth.onAuthStateChange((event, session) => {
         if (active) {
           setCurrentUser(session?.user ?? null);
           setAuthReady(true);
+          if (session?.user && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+            restoreFavoriteReturn();
+          }
         }
       });
 
@@ -97,6 +148,7 @@ export default function Navbar() {
         if (active) {
           setCurrentUser(data.user);
           setAuthReady(true);
+          if (data.user) restoreFavoriteReturn();
         }
       }).catch(() => {
         if (active) {
@@ -202,7 +254,10 @@ export default function Navbar() {
             aria-controls="account-dialog"
             aria-expanded={accountOpen}
             aria-label={currentUser ? "Mon compte, connecté" : "Mon espace"}
-            onClick={() => setAccountOpen(true)}
+            onClick={() => {
+              setAccountPrompt("default");
+              setAccountOpen(true);
+            }}
             style={{ border: "none", cursor: "pointer", font: "inherit" }}
           >
             <User size={14} />
@@ -233,6 +288,7 @@ export default function Navbar() {
             aria-expanded={accountOpen}
             onClick={() => {
               closeMobileMenu();
+              setAccountPrompt("default");
               setAccountOpen(true);
             }}
             style={{ border: "none", cursor: "pointer", font: "inherit" }}
@@ -302,9 +358,13 @@ export default function Navbar() {
 
       <AccountModal
         isOpen={accountOpen}
-        onClose={() => setAccountOpen(false)}
+        onClose={() => {
+          setAccountOpen(false);
+          setAccountPrompt("default");
+        }}
         user={currentUser}
         authReady={authReady}
+        prompt={accountPrompt}
       />
     </nav>
   );

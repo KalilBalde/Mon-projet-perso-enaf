@@ -36,6 +36,7 @@ export default function HomePage() {
     useState<SearchFilters>(DEFAULT_FILTERS);
   const [resetVersion, setResetVersion] = useState(0);
   const [databaseListings, setDatabaseListings] = useState<Listing[]>([]);
+  const [isListingsLoading, setIsListingsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -43,6 +44,10 @@ export default function HomePage() {
     void fetchPublishedListings().then((listings) => {
       if (active) {
         setDatabaseListings(listings);
+      }
+    }).finally(() => {
+      if (active) {
+        setIsListingsLoading(false);
       }
     });
 
@@ -227,11 +232,13 @@ export default function HomePage() {
                 }}
               >
                 {hasActiveSearch
-                  ? `${filteredListings.length} bien${
-                      filteredListings.length > 1 ? "s" : ""
-                    } trouvé${
-                      filteredListings.length > 1 ? "s" : ""
-                    }`
+                  ? isListingsLoading
+                    ? "Recherche en cours..."
+                    : `${filteredListings.length} bien${
+                        filteredListings.length > 1 ? "s" : ""
+                      } trouvé${
+                        filteredListings.length > 1 ? "s" : ""
+                      }`
                   : "Annonces en vedette"}
               </h2>
               </div>
@@ -267,10 +274,28 @@ export default function HomePage() {
             </div>
           </div>
 
-          <ListingsCarousel
-            listings={filteredListings}
-            isFiltered={hasActiveSearch}
-          />
+          {isListingsLoading ? (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                padding: "30px 18px",
+                border: "1px solid #e4eaf0",
+                borderRadius: 14,
+                background: "#f7f9fc",
+                color: "#718198",
+                textAlign: "center",
+                fontSize: 14,
+              }}
+            >
+              Chargement des annonces...
+            </div>
+          ) : (
+            <ListingsCarousel
+              listings={filteredListings}
+              isFiltered={hasActiveSearch}
+            />
+          )}
         </div>
       </section>
 

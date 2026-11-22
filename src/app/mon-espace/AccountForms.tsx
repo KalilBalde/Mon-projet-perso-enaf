@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
+import { FAVORITE_RETURN_KEY } from "../../data/constants";
 import styles from "./page.module.css";
 
 type FormMode = "login" | "signup";
@@ -38,10 +39,12 @@ export default function AccountForms({
   confirmationError,
   onAuthenticated,
   variant = "page",
+  intent = "default",
 }: {
   confirmationError: boolean;
   onAuthenticated?: () => void;
   variant?: "page" | "modal";
+  intent?: "default" | "favorites";
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<FormMode>("login");
@@ -68,6 +71,24 @@ export default function AccountForms({
   const selectMode = (nextMode: FormMode) => {
     setMode(nextMode);
     setFeedback(null);
+  };
+
+  const getEmailRedirectTo = () => {
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+
+    if (variant === "modal" && intent === "favorites") {
+      try {
+        const savedLocation = window.sessionStorage.getItem(FAVORITE_RETURN_KEY);
+        const returnHref = savedLocation
+          ? (JSON.parse(savedLocation) as { href?: string }).href
+          : undefined;
+        if (returnHref) callbackUrl.searchParams.set("next", returnHref);
+      } catch {
+        // Continue with the default account destination if session storage is unavailable.
+      }
+    }
+
+    return callbackUrl.toString();
   };
 
   const finishAuthentication = () => {
@@ -121,7 +142,7 @@ export default function AccountForms({
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: getEmailRedirectTo(),
             data: {
               full_name: `${normalizedFirstNames} ${normalizedLastName}`,
               first_names: normalizedFirstNames,
@@ -198,7 +219,7 @@ export default function AccountForms({
         type: "signup",
         email: normalizedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getEmailRedirectTo(),
         },
       });
 
@@ -237,7 +258,9 @@ export default function AccountForms({
         }
       >
         <h2 id={variant === "modal" ? "account-dialog-title" : undefined}>
-          {mode === "login"
+          {variant === "modal" && intent === "favorites"
+            ? "Sauvegardez vos annonces favorites"
+            : mode === "login"
             ? variant === "modal"
               ? "Connectez-vous à votre espace"
               : "Heureux de vous retrouver"
@@ -246,9 +269,11 @@ export default function AccountForms({
               : "Votre espace commence ici"}
         </h2>
         <p>
-          {mode === "login"
-            ? "Retrouvez votre compte en quelques instants."
-            : "Créez votre accès personnel ENAFIM."}
+          {variant === "modal" && intent === "favorites"
+            ? "Connectez-vous ou créez un compte ENAFIM pour retrouver vos annonces favorites sur tous vos appareils."
+            : mode === "login"
+              ? "Retrouvez votre compte en quelques instants."
+              : "Créez votre accès personnel ENAFIM."}
         </p>
       </div>
 

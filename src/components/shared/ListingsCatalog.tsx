@@ -10,6 +10,7 @@ import ListingCard from "./ListingCard";
 import styles from "./ListingsCatalog.module.css";
 
 interface CatalogFilterValues {
+  referenceId: string;
   quartier: string;
   type: string;
   offerType: ListingOfferType | "";
@@ -21,6 +22,7 @@ interface CatalogFilterValues {
 }
 
 const INITIAL_FILTERS: CatalogFilterValues = {
+  referenceId: "",
   quartier: "",
   type: "",
   offerType: "",
@@ -42,6 +44,7 @@ export default function ListingsCatalog({ listings }: { listings: Listing[] }) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const listingFilters: ListingFilters = {
+    referenceId: filters.referenceId.trim() || undefined,
     quartier: filters.quartier.trim() || undefined,
     type: filters.type || undefined,
     offerType: filters.offerType || undefined,
@@ -105,6 +108,19 @@ export default function ListingsCatalog({ listings }: { listings: Listing[] }) {
             </summary>
 
             <div className={styles.panel}>
+              <label className={styles.field}>
+                ID de l’annonce
+                <span className={styles.scaledControl}>
+                  <input
+                    type="search"
+                    value={filters.referenceId}
+                    onChange={(event) => updateFilter("referenceId", event.target.value)}
+                    placeholder="Ex. CIM2611152318"
+                    aria-label="Rechercher par ID d’annonce"
+                  />
+                </span>
+              </label>
+
               <label className={styles.field}>
                 Type de bien
                 <span className={styles.scaledControl}>

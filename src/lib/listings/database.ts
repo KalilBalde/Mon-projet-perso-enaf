@@ -29,6 +29,7 @@ export type ListingSubmission = Listing & {
 
 interface DatabaseListing {
   id: number | string;
+  reference_id?: string | null;
   title: string | null;
   quartier: string | null;
   price: number | null;
@@ -63,22 +64,22 @@ interface LegacyDatabaseListing extends Omit<
 
 type ListingReadResponse = {
   data: unknown[] | null;
-  error: { code: string } | null;
+  error: { code: string; message?: string } | null;
 };
 
 type ListingReadQuery = (columns: string) => PromiseLike<ListingReadResponse>;
 
 const LISTING_COLUMNS =
-  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at, reference_id";
 const LISTING_COLUMNS_WITHOUT_CARD_BADGE =
-  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, kitchen, type, priority, status, image, images, description, features, is_new, moderation_status, created_at, reference_id";
 const LISTING_COLUMNS_WITH_VIEW_COUNT = `${LISTING_COLUMNS}, view_count`;
 const LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT = `${LISTING_COLUMNS_WITHOUT_CARD_BADGE}`;
 const LISTING_COLUMNS_WITHOUT_KITCHEN =
-  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, card_badge, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at, reference_id";
 const LISTING_COLUMNS_WITHOUT_KITCHEN_AND_VIEW_COUNT = `${LISTING_COLUMNS_WITHOUT_KITCHEN}, view_count`;
 const LISTING_COLUMNS_WITHOUT_KITCHEN_OR_BADGE =
-  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
+  "id, title, quartier, price, offer_type, surface, bedrooms, living_rooms, showers, type, priority, status, image, images, description, features, is_new, moderation_status, created_at, reference_id";
 const LEGACY_LISTING_COLUMNS =
   "id, title, quartier, price, surface, rooms, bathrooms, type, priority, status, image, images, description, features, is_new, moderation_status, created_at";
 
@@ -113,6 +114,7 @@ function createPublicClient() {
 function toListing(row: DatabaseListing): Listing {
   return {
     id: Number(row.id),
+    referenceId: row.reference_id ?? createFallbackListingReference(row),
     title: row.title ?? "",
     quartier: row.quartier ?? "",
     price: row.price === null ? null : Number(row.price),
@@ -137,6 +139,22 @@ function toListing(row: DatabaseListing): Listing {
   };
 }
 
+function createFallbackListingReference(
+  row: Pick<DatabaseListing, "id" | "quartier" | "created_at">,
+): string {
+  const neighborhoodPrefix = (row.quartier ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 3)
+    .toUpperCase();
+  const prefix = neighborhoodPrefix
+    ? neighborhoodPrefix.padEnd(3, "X")
+    : "ANN";
+
+  return `${prefix}-${row.id}`;
+}
+
 function toSubmission(row: DatabaseListing): ListingSubmission {
   return {
     ...toListing(row),
@@ -150,8 +168,18 @@ async function fetchListingRows(
 ): Promise<DatabaseListing[]> {
   const isMissingColumnError = (error: { code: string } | null) =>
     error !== null && ["42703", "PGRST204"].includes(error.code);
+  const queryWithReferenceFallback = async (columns: string) => {
+    const result = await query(columns);
+    const referenceIdIsMissing =
+      isMissingColumnError(result.error) &&
+      result.error?.message?.includes("reference_id");
 
-  const currentResult = await query(LISTING_COLUMNS_WITH_VIEW_COUNT);
+    if (!referenceIdIsMissing) return result;
+
+    return query(columns.split(", ").filter((column) => column !== "reference_id").join(", "));
+  };
+
+  const currentResult = await queryWithReferenceFallback(LISTING_COLUMNS_WITH_VIEW_COUNT);
 
   if (!currentResult.error && currentResult.data) {
     return currentResult.data as DatabaseListing[];
@@ -161,7 +189,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const currentSchemaResult = await query(LISTING_COLUMNS);
+  const currentSchemaResult = await queryWithReferenceFallback(LISTING_COLUMNS);
 
   if (!currentSchemaResult.error && currentSchemaResult.data) {
     return (currentSchemaResult.data as unknown as DatabaseListing[]).map((row) => ({
@@ -174,7 +202,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const schemaWithoutBadge = await query(LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT);
+  const schemaWithoutBadge = await queryWithReferenceFallback(LISTING_COLUMNS_WITHOUT_BADGE_AND_VIEW_COUNT);
 
   if (!schemaWithoutBadge.error && schemaWithoutBadge.data) {
     return (schemaWithoutBadge.data as unknown as DatabaseListing[]).map((row) => ({
@@ -194,7 +222,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const schemaWithoutKitchenAndViewCount = await query(
+  const schemaWithoutKitchenAndViewCount = await queryWithReferenceFallback(
     LISTING_COLUMNS_WITHOUT_KITCHEN_AND_VIEW_COUNT,
   );
 
@@ -210,7 +238,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const schemaWithoutKitchen = await query(LISTING_COLUMNS_WITHOUT_KITCHEN);
+  const schemaWithoutKitchen = await queryWithReferenceFallback(LISTING_COLUMNS_WITHOUT_KITCHEN);
 
   if (!schemaWithoutKitchen.error && schemaWithoutKitchen.data) {
     return (schemaWithoutKitchen.data as unknown as DatabaseListing[]).map((row) => ({
@@ -224,7 +252,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const schemaWithoutKitchenOrBadge = await query(
+  const schemaWithoutKitchenOrBadge = await queryWithReferenceFallback(
     LISTING_COLUMNS_WITHOUT_KITCHEN_OR_BADGE,
   );
 
@@ -247,7 +275,7 @@ async function fetchListingRows(
     return [];
   }
 
-  const legacyResult = await query(LEGACY_LISTING_COLUMNS);
+  const legacyResult = await queryWithReferenceFallback(LEGACY_LISTING_COLUMNS);
 
   if (legacyResult.error || !legacyResult.data) {
     return [];

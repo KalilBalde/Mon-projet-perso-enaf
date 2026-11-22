@@ -5,7 +5,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Bath,
   BedDouble,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import type { Listing } from "../../types";
 import { LISTING_IMAGE_PLACEHOLDER } from "../../data/constants";
-import { getFavoriteIds, toggleFavorite } from "../../lib/favorites/storage";
+import { useFavorites } from "../favorites/FavoritesProvider";
 import { listingRepository } from "../../lib/listings/repository";
 import { formatListingKitchen, formatListingPrice } from "../../utils/format";
 import styles from "./ListingCard.module.css";
@@ -125,15 +125,12 @@ export default function ListingCard({
   mobileCompact?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { favoriteIds, toggleFavorite } = useFavorites();
+  const isFavorite = favoriteIds.includes(listing.id);
   const imageTouchStartXRef = useRef<number | null>(null);
   const ignoreImageClickUntilRef = useRef(0);
-
-  useEffect(() => {
-    setIsFavorite(getFavoriteIds().includes(listing.id));
-  }, [listing.id]);
 
   const isTerrain = listing.type === "Terrain-Vide";
   const listingTitle = listing.title.trim() || "Annonce sans titre";
@@ -459,6 +456,9 @@ export default function ListingCard({
             <MapPin size={13} color="#1a6dd4" />
             <span>{listingNeighborhood}, Conakry</span>
           </div>
+          {listing.referenceId && (
+            <span className={styles.referenceId}>ID : {listing.referenceId}</span>
+          )}
 
           <div
             className={styles.featureBadges}
@@ -565,7 +565,7 @@ export default function ListingCard({
             ? `Retirer ${listingTitle} des favoris`
             : `Ajouter ${listingTitle} aux favoris`
         }
-        onClick={() => setIsFavorite(toggleFavorite(listing.id))}
+        onClick={() => toggleFavorite(listing.id)}
         style={{
           position: "absolute",
           top: "var(--card-heart-offset, 10px)",
