@@ -3,6 +3,7 @@ import type { Listing, ListingOfferType } from "../../types";
 export interface ListingFilters {
   type?: string;
   quartier?: string;
+  referenceId?: string;
   offerType?: ListingOfferType;
   kitchen?: "internal" | "external";
   budgetMin?: number;
@@ -166,6 +167,9 @@ function matchesFilters(
 ): boolean {
   const normalizedType = normalizeText(filters.type ?? "");
   const normalizedListingNeighborhood = normalizeText(listing.quartier);
+  const referenceQuery = filters.referenceId?.trim().toLowerCase();
+  const matchesReference =
+    !referenceQuery || listing.referenceId?.toLowerCase().includes(referenceQuery) === true;
   const matchesType =
     !normalizedType ||
     normalizedType === "tous-types" ||
@@ -203,7 +207,7 @@ function matchesFilters(
     !filters.features?.length ||
     filters.features.every((feature) => listing.features?.includes(feature));
 
-  return matchesType && matchesNeighborhood && matchesOffer && matchesKitchen && matchesBudget &&
+  return matchesType && matchesNeighborhood && matchesReference && matchesOffer && matchesKitchen && matchesBudget &&
     matchesSurface && matchesBedrooms && matchesShowers && matchesFeatures;
 }
 

@@ -616,6 +616,23 @@ export default function ListingDetailsPage({
           white-space: nowrap;
         }
 
+        .listing-about-reference {
+          margin: 0;
+          color: #718198;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .listing-about-reference-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          min-width: 0;
+          margin: -5px 0 10px 21px;
+        }
+
         .listing-about-price-row {
           display: flex;
           align-items: center;
@@ -649,7 +666,7 @@ export default function ListingDetailsPage({
           color: #fff;
           font-size: 21px;
           line-height: 1.2;
-          white-space: normal;
+          white-space: nowrap;
         }
 
         .listing-about-actions {
@@ -1156,11 +1173,10 @@ export default function ListingDetailsPage({
                 {listingNeighborhood}, Conakry
               </span>
             </div>
-
-            <div className="listing-about-price-row">
-              <strong className="listing-about-price">
-                {formatListingPrice(listing.price, listing.offerType)}
-              </strong>
+            <div className="listing-about-reference-row">
+              {listing.referenceId && (
+                <p className="listing-about-reference">ID : {listing.referenceId}</p>
+              )}
               <span className="listing-about-actions">
                 <span
                   className="listing-about-views"
@@ -1185,6 +1201,12 @@ export default function ListingDetailsPage({
                   {shareStatus === "copied" ? <Check size={15} /> : <Share2 size={15} />}
                 </button>
               </span>
+            </div>
+
+            <div className="listing-about-price-row">
+              <strong className="listing-about-price">
+                {formatListingPrice(listing.price, listing.offerType)}
+              </strong>
             </div>
 
             <div className="listing-about-facts">

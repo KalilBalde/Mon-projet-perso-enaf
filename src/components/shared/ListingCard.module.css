@@ -7,6 +7,18 @@
   display: none;
 }
 
+.referenceId {
+  display: block;
+  overflow: hidden;
+  margin: 3px 0 0 18px;
+  color: #4d6279;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 600px) {
   .mobileCompact {
     --card-heart-size: 27px;
@@ -38,6 +50,10 @@
   .mobileCompact h3 {
     line-height: 1.25 !important;
     -webkit-line-clamp: 2 !important;
+  }
+
+  .mobileCompact .referenceId {
+    font-size: 8px;
   }
 
   .mobileCompact > a > div > div:nth-child(3) {

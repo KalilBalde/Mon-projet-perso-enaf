@@ -8,6 +8,7 @@ export type ListingCardBadge = "new" | "rented" | "sold" | "title_deed";
 
 export interface Listing {
   id: number;
+  referenceId?: string;
   title: string;
   quartier: string;
   price: number | null;

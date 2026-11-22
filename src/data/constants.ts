@@ -4,6 +4,9 @@ export const LOGO_SRC = "/images/logo_enafim.png";
 export const LISTING_IMAGE_PLACEHOLDER = "/images/listing-image-placeholder.svg";
 export const RESET_LISTING_FILTERS_EVENT = "enafim:reset-listing-filters";
 export const PROFILE_UPDATED_EVENT = "enafim:profile-updated";
+export const OPEN_ACCOUNT_MODAL_EVENT = "enafim:open-account-modal";
+export const PENDING_FAVORITE_KEY = "enafim:pending-favorite-listing-id";
+export const FAVORITE_RETURN_KEY = "enafim:favorite-return-location";
 
 /* 4 images : rues residentielles, rangees de batiments, quartiers urbains */
 export const HERO_SLIDES = [
